@@ -7,6 +7,7 @@ import Tooltip from '../components/Tooltip';
 import QuickBenchmark from '../components/QuickBenchmark';
 import ServiceList from '../components/ServiceList';
 import ChatWidget from '../components/ChatWidget';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const services = [
   { id: 'user', label: 'User Service', description: 'Auth, profile, registration' },
@@ -60,8 +61,10 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
   const [benchmarkProgress, setBenchmarkProgress] = useState(0);
   const [benchmarkMessage, setBenchmarkMessage] = useState('');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // New loading state
 
   const fetchCart = async () => {
+    setIsLoading(true); // Set loading to true
     try {
       const response = await fetch('/api/v1/cart', {
         headers: {
@@ -90,6 +93,8 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
     } catch (error) {
       console.error('Error fetching cart:', error);
       showNotification('Failed to fetch cart data.', 'error');
+    } finally {
+      setIsLoading(false); // Set loading to false
     }
   };
 
@@ -120,6 +125,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
   };
 
   const handleAddToCart = async (productId: string) => {
+    setIsLoading(true); // Set loading to true
     try {
       const response = await fetch('/api/v1/cart', {
         method: 'POST',
@@ -138,6 +144,8 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
     } catch (error) {
       console.error('Error adding to cart:', error);
       showNotification('Failed to add product to cart.', 'error');
+    } finally {
+      setIsLoading(false); // Set loading to false
     }
   };
 
@@ -194,7 +202,12 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
             View Cart ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})
           </button>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md relative">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
+                <LoadingSpinner />
+              </div>
+            )}
             <ProductGrid onAdd={handleAddToCart} />
         </div>
       </div>
@@ -222,6 +235,15 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
               ></div>
             </div>
           )}
+        </div>
+
+        {/* Recommended Runtimes */}
+        <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-bold mb-4">Recommended Runtimes</h2>
+          <ul className="space-y-2">
+            <li>Node.js (for quick prototyping)</li>
+            <li>Rust (for high performance)</li>
+          </ul>
         </div>
       </div>
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -15,6 +14,7 @@ function App() {
   const [userXp, setUserXp] = useState(0);
   const [loginStreak, setLoginStreak] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [isOffline, setIsOffline] = useState(false);
 
   const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
     setNotification({ message, type });
@@ -79,6 +79,12 @@ function App() {
                 <option value="es">Spanish</option>
                 <option value="fr">French</option>
               </select>
+              <button
+                onClick={() => setIsOffline(prev => !prev)}
+                className={`ml-2 px-2 py-1 text-xs rounded-full ${isOffline ? 'bg-red-500' : 'bg-green-500'}`}
+              >
+                {isOffline ? 'Offline' : 'Online'}
+              </button>
               <Link to="/login" className="hover:text-gray-300 ml-2">Login</Link>
             </li>
             <li>
