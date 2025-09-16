@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import PlaygroundPage from './pages/PlaygroundPage';
@@ -16,9 +16,9 @@ function App() {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [isOffline, setIsOffline] = useState(false);
 
-  const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
+  const showNotification = useCallback((message: string, type: 'success' | 'error' | 'info') => {
     setNotification({ message, type });
-  };
+  }, []);
 
   const clearNotification = () => {
     setNotification(null);
@@ -51,7 +51,7 @@ function App() {
       setLoginStreak(1);
     }
     localStorage.setItem('lastLoginDate', today);
-  }, []);
+  }, [loginStreak, showNotification]);
 
   return (
     <Router>

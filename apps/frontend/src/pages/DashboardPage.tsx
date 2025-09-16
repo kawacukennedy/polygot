@@ -1,8 +1,7 @@
 
 import React from 'react';
-import MetricTileArea from '../components/MetricTileArea';
 import BenchmarkChart from '../components/BenchmarkChart';
-import Leaderboard from '../components/Leaderboard';
+import BadgesDisplay from '../components/BadgesDisplay';
 
 const DashboardPage: React.FC = () => {
   const recentRuns = [

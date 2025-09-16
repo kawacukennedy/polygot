@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import CartDrawer from '../components/CartDrawer';
 import MetricTileArea from '../components/MetricTileArea';
@@ -63,7 +63,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // New loading state
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     setIsLoading(true); // Set loading to true
     try {
       const response = await fetch('/api/v1/cart', {
@@ -96,11 +96,11 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
     } finally {
       setIsLoading(false); // Set loading to false
     }
-  };
+  }, [showNotification]);
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
