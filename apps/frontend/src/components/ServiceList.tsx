@@ -1,34 +1,48 @@
 import React from 'react';
-import LanguageChip from './LanguageChip';
+import Tooltip from '../components/Tooltip';
 
-interface ServiceItem {
+interface Service {
   id: string;
   label: string;
   description: string;
 }
 
 interface ServiceListProps {
-  services: ServiceItem[];
+  services: Service[];
+  implementations: Record<string, string[]>;
+  selectedImpl: Record<string, string>;
+  onSwap: (serviceId: string, impl: string) => void;
 }
 
-const ServiceList: React.FC<ServiceListProps> = ({ services }) => {
+const ServiceList: React.FC<ServiceListProps> = ({
+  services,
+  implementations,
+  selectedImpl,
+  onSwap,
+}) => {
   return (
-    <div className="p-4 bg-surface-light rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-4">Services</h3>
-      <ul className="space-y-4">
-        {services.map((service) => (
-          <li key={service.id} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="font-medium text-gray-800">{service.label}</p>
-                <p className="text-sm text-muted">{service.description}</p>
-              </div>
-              {/* Placeholder for language selector */}
-              <LanguageChip language="Node.js" status="ready" version="18" />
+    <div className="space-y-4">
+      {services.map((service) => (
+        <div key={service.id} className="p-4 border rounded-lg focus-within:ring-2 focus-within:ring-indigo-500 hover:border-indigo-500 transition-all duration-200">
+          <Tooltip content={`Current ${service.label} implementation: ${selectedImpl[service.id]}. Click to swap.`}>
+            <h3 className="font-bold">{service.label}</h3>
+            <p className="text-sm text-gray-600">{service.description}</p>
+            <div className="mt-2">
+              <select
+                value={selectedImpl[service.id]}
+                onChange={(e) => onSwap(service.id, e.target.value)}
+                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+              >
+                {implementations[service.id as keyof typeof implementations].map((impl) => (
+                  <option key={impl} value={impl}>
+                    {impl}
+                  </option>
+                ))}
+              </select>
             </div>
-          </li>
-        ))}
-      </ul>
+          </Tooltip>
+        </div>
+      ))}
     </div>
   );
 };

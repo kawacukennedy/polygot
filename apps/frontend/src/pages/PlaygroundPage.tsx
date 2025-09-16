@@ -4,6 +4,9 @@ import CartDrawer from '../components/CartDrawer';
 import MetricTileArea from '../components/MetricTileArea';
 import BenchmarkChart from '../components/BenchmarkChart';
 import Tooltip from '../components/Tooltip';
+import QuickBenchmark from '../components/QuickBenchmark';
+import ServiceList from '../components/ServiceList';
+import ChatWidget from '../components/ChatWidget';
 
 const services = [
   { id: 'user', label: 'User Service', description: 'Auth, profile, registration' },
@@ -56,6 +59,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
   const [isBenchmarking, setIsBenchmarking] = useState(false);
   const [benchmarkProgress, setBenchmarkProgress] = useState(0);
   const [benchmarkMessage, setBenchmarkMessage] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const fetchCart = async () => {
     try {
@@ -91,6 +95,20 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
 
   useEffect(() => {
     fetchCart();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'k') {
+        event.preventDefault();
+        setIsChatOpen(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleSwap = (serviceId: string, impl: string) => {
@@ -150,34 +168,22 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
     }, 3000);
   };
 
+  const handleChatMessage = (message: string) => {
+    console.log('Chat message sent:', message);
+    // In a real app, this would send the message to the chat service
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Left Panel */}
       <div className="w-1/4 bg-white p-6 shadow-md">
         <h2 className="text-2xl font-bold mb-6">Services</h2>
-        <div className="space-y-4">
-          {services.map((service) => (
-            <div key={service.id} className="p-4 border rounded-lg focus-within:ring-2 focus-within:ring-indigo-500 hover:border-indigo-500 transition-all duration-200">
-              <Tooltip content={`Current ${service.label} implementation: ${selectedImpl[service.id]}. Click to swap.`}>
-                <h3 className="font-bold">{service.label}</h3>
-                <p className="text-sm text-gray-600">{service.description}</p>
-                <div className="mt-2">
-                  <select
-                    value={selectedImpl[service.id]}
-                    onChange={(e) => handleSwap(service.id, e.target.value)}
-                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-                  >
-                    {implementations[service.id as keyof typeof implementations].map((impl) => (
-                      <option key={impl} value={impl}>
-                        {impl}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </Tooltip>
-            </div>
-          ))}
-        </div>
+        <ServiceList
+          services={services}
+          implementations={implementations}
+          selectedImpl={selectedImpl}
+          onSwap={handleSwap}
+        />
       </div>
 
       {/* Center Panel */}
@@ -200,13 +206,12 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
           <MetricTileArea />
           <BenchmarkChart chart_types={['line', 'bar']} tooltip_format='locale' />
           <Tooltip content="Run a short or full k6 benchmark against the chosen implementation.">
-            <button
-              onClick={runBenchmark}
-              disabled={isBenchmarking}
-              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 w-full ripple-button"
-            >
-              {isBenchmarking ? 'Running Benchmark...' : 'Run Quick Benchmark'}
-            </button>
+            <QuickBenchmark
+              default_duration_s={10}
+              allow_full_run={true}
+              onRunBenchmark={runBenchmark}
+              isBenchmarking={isBenchmarking}
+            />
           </Tooltip>
           {benchmarkMessage && <p className="mt-2 text-sm text-gray-600 text-center">{benchmarkMessage}</p>}
           {isBenchmarking && (
@@ -221,6 +226,12 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
       </div>
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cartItems} />
+
+      {isChatOpen && (
+        <div className="fixed bottom-4 right-4 z-50 w-80">
+          <ChatWidget session_id="some-session-id" user_id="some-user-id" onSend={handleChatMessage} />
+        </div>
+      )}
     </div>
   );
 };
