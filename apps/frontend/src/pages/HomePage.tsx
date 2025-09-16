@@ -1,12 +1,14 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LanguageChip from '../components/LanguageChip';
 
 interface HomePageProps {
   showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
+  gainXp: (amount: number) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ showNotification }) => {
+const HomePage: React.FC<HomePageProps> = ({ showNotification, gainXp }) => {
   const languages = [
     { name: 'Node.js', status: 'ready' },
     { name: 'Python', status: 'ready' },
@@ -16,10 +18,10 @@ const HomePage: React.FC<HomePageProps> = ({ showNotification }) => {
     { name: 'Java', status: 'failed' },
   ];
 
-  // Example of using showNotification (can be removed later)
-  // useEffect(() => {
-  //   showNotification('Welcome to the Home Page!', 'info');
-  // }, []);
+  const handleCompleteTutorial = () => {
+    gainXp(20); // Award 20 XP for completing tutorial
+    showNotification('Tutorial completed! You gained 20 XP.', 'success');
+  };
 
   return (
     <div className="bg-gray-50 text-gray-800">
@@ -36,6 +38,12 @@ const HomePage: React.FC<HomePageProps> = ({ showNotification }) => {
               View Benchmarks
             </Link>
           </div>
+          <button
+            onClick={handleCompleteTutorial}
+            className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+          >
+            Simulate Complete Tutorial
+          </button>
         </div>
       </header>
 
