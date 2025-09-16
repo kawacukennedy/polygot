@@ -119,7 +119,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
         <div className="space-y-4">
           {services.map((service) => (
             <div key={service.id} className="p-4 border rounded-lg focus-within:ring-2 focus-within:ring-indigo-500 hover:border-indigo-500 transition-all duration-200">
-              <Tooltip content="Swap the runtime used by this demo session. This only affects your session.">
+              <Tooltip content={`Current ${service.label} implementation: ${selectedImpl[service.id]}. Click to swap.`}>
                 <h3 className="font-bold">{service.label}</h3>
                 <p className="text-sm text-gray-600">{service.description}</p>
                 <div className="mt-2">
