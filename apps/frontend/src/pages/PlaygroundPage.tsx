@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import CartDrawer from '../components/CartDrawer';
@@ -31,9 +30,10 @@ interface CartItem {
 
 interface PlaygroundPageProps {
   showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
+  gainXp: (amount: number) => void;
 }
 
-const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification }) => {
+const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainXp }) => {
   const [selectedImpl, setSelectedImpl] = useState<Record<string, string>>({
     user: 'Node.js',
     product: 'Python',
@@ -72,6 +72,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification }) => 
     setSelectedImpl((prev) => ({ ...prev, [serviceId]: impl }));
     console.log(`Swapping ${serviceId} to ${impl}`);
     showNotification(`Swapping ${serviceId} to ${impl}...`, 'info');
+    gainXp(5); // Award XP for runtime switch
     // In a real app, this would trigger an API call and visual feedback
   };
 
@@ -105,6 +106,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification }) => 
       setIsBenchmarking(false);
       setBenchmarkMessage('Benchmark completed!');
       showNotification('Benchmark completed!', 'success');
+      gainXp(15); // Award XP for benchmark run
       // In a real app, this would involve an API call and processing results
     }, 3000);
   };

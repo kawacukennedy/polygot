@@ -54,7 +54,7 @@ function App() {
 
         <Routes>
           <Route path="/" element={<HomePage showNotification={showNotification} />} />
-          <Route path="/playground" element={<PlaygroundPage showNotification={showNotification} />} />
+          <Route path="/playground" element={<PlaygroundPage showNotification={showNotification} gainXp={gainXp} />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/login" element={<LoginPage showNotification={showNotification} />} />
           <Route path="/register" element={<RegisterPage showNotification={showNotification} />} />
