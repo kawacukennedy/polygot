@@ -1,5 +1,7 @@
+
 import React from 'react';
 import Tooltip from '../components/Tooltip';
+import useTranslation from '../hooks/useTranslation';
 
 interface Service {
   id: string;
@@ -20,11 +22,13 @@ const ServiceList: React.FC<ServiceListProps> = ({
   selectedImpl,
   onSwap,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       {services.map((service) => (
         <div key={service.id} className="p-4 border rounded-lg focus-within:ring-2 focus-within:ring-indigo-500 hover:border-indigo-500 transition-all duration-200">
-          <Tooltip content={`Current ${service.label} implementation: ${selectedImpl[service.id]}. Click to swap.`}>
+          <Tooltip content={t('swap_runtime') + ` ${service.label} ` + t('implementation') + `: ${selectedImpl[service.id]}. ` + t('click_to_swap')}>
             <h3 className="font-bold">{service.label}</h3>
             <p className="text-sm text-gray-600">{service.description}</p>
             <div className="mt-2">

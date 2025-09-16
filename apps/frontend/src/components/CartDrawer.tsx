@@ -1,4 +1,5 @@
 import React from 'react';
+import useTranslation from '../hooks/useTranslation';
 
 interface CartItem {
   product_id: string;
@@ -14,6 +15,7 @@ interface CartDrawerProps {
 }
 
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
+  const { t } = useTranslation();
   const total = items.reduce((sum, item) => sum + item.quantity * item.price_cents, 0);
   const formattedTotal = `$${(total / 100).toFixed(2)}`;
 
@@ -38,7 +40,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
               <div className="flex-1 py-6 overflow-y-auto px-4 sm:px-6">
                 <div className="flex items-start justify-between">
                   <h2 className="text-lg font-medium text-gray-900" id="cart-drawer-title">
-                    Shopping Cart
+                    {t('shopping_cart')}
                   </h2>
                   <div className="ml-3 h-7 flex items-center">
                     <button
@@ -60,7 +62,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
                   <div className="flow-root">
                     <ul className="-my-6 divide-y divide-gray-200">
                       {items.length === 0 ? (
-                        <li className="py-6 text-center text-muted">Your cart is empty.</li>
+                        <li className="py-6 text-center text-muted">{t('your_cart_is_empty')}</li>
                       ) : (
                         items.map((item) => (
                           <li key={item.product_id} className="py-6 flex">
@@ -83,20 +85,20 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
 
               <div className="border-t border-gray-200 py-6 px-4 sm:px-6">
                 <div className="flex justify-between text-base font-medium text-gray-900">
-                  <p>Subtotal</p>
+                  <p>{t('subtotal')}</p>
                   <p>{formattedTotal}</p>
                 </div>
-                <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
+                <p className="mt-0.5 text-sm text-gray-500">{t('shipping_taxes_checkout')}</p>
                 <div className="mt-6">
                   <button
                     className="flex items-center justify-center rounded-md border border-transparent bg-primary px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-primary_600"
                   >
-                    Checkout
+                    {t('checkout')}
                   </button>
                 </div>
                 <div className="mt-6 flex justify-center text-sm text-center text-gray-500">
                   <p>
-                    or <button type="button" className="font-medium text-primary hover:text-primary_600" onClick={onClose}>Continue Shopping<span aria-hidden="true"> &rarr;</span></button>
+                    {t('or')} <button type="button" className="font-medium text-primary hover:text-primary_600" onClick={onClose}>{t('continue_shopping')}<span aria-hidden="true"> &rarr;</span></button>
                   </p>
                 </div>
               </div>

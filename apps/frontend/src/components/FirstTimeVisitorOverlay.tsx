@@ -1,29 +1,32 @@
 import React, { useState, useEffect } from 'react';
+import useTranslation from '../hooks/useTranslation';
 
 interface FirstTimeVisitorOverlayProps {
   onClose: () => void;
 }
 
-const steps = [
-  {
-    title: 'Welcome to Polyglot Playground!',
-    description: 'Explore, contribute, and benchmark backend services across multiple programming languages in a fully adaptive, gamified environment.',
-  },
-  {
-    title: 'Swap Runtimes',
-    description: 'Easily switch between different language implementations for each service to compare their performance live.',
-  },
-  {
-    title: 'Run Benchmarks',
-    description: 'Execute quick benchmarks to see how different language services perform under load.',
-  },
-  {
-    title: 'Earn XP and Climb Leaderboards',
-    description: 'Gain experience points by interacting with the playground and see how you rank against other developers.',
-  },
-];
-
 const FirstTimeVisitorOverlay: React.FC<FirstTimeVisitorOverlayProps> = ({ onClose }) => {
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      title: t('welcome_overlay_title'),
+      description: t('welcome_overlay_desc'),
+    },
+    {
+      title: t('swap_runtimes_title'),
+      description: t('swap_runtimes_desc'),
+    },
+    {
+      title: t('run_benchmarks_title'),
+      description: t('run_benchmarks_desc'),
+    },
+    {
+      title: t('earn_xp_title'),
+      description: t('earn_xp_desc'),
+    },
+  ];
+
   const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [doNotShowAgain, setDoNotShowAgain] = useState(false);
@@ -74,7 +77,7 @@ const FirstTimeVisitorOverlay: React.FC<FirstTimeVisitorOverlayProps> = ({ onClo
               checked={doNotShowAgain}
               onChange={(e) => setDoNotShowAgain(e.target.checked)}
             />
-            <span className="ml-2 text-sm text-gray-700">Do not show again</span>
+            <span className="ml-2 text-sm text-gray-700">{t('do_not_show_again')}</span>
           </label>
           <div className="space-x-4">
             {currentStep < steps.length - 1 && (
@@ -82,14 +85,14 @@ const FirstTimeVisitorOverlay: React.FC<FirstTimeVisitorOverlayProps> = ({ onClo
                 onClick={handleSkip}
                 className="px-4 py-2 text-gray-600 rounded-md hover:bg-gray-200"
               >
-                Skip
+                {t('skip')}
               </button>
             )}
             <button
               onClick={handleNext}
               className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
             >
-              {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
+              {currentStep === steps.length - 1 ? t('finish') : t('next')}
             </button>
           </div>
         </div>

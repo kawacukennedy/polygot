@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
+import useTranslation from '../hooks/useTranslation';
 
 interface ChatWidgetProps {
   session_id: string;
@@ -14,6 +14,7 @@ interface Message {
 }
 
 const ChatWidget: React.FC<ChatWidgetProps> = ({ session_id, user_id, onSend }) => {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -24,11 +25,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ session_id, user_id, onSend }) 
     const timer = setTimeout(() => {
       setMessages((prevMessages) => [
         ...prevMessages,
-        { id: Date.now().toString(), sender: 'System', text: 'Welcome to the chat!' },
+        { id: Date.now().toString(), sender: 'System', text: t('welcome_to_chat') },
       ]);
     }, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -63,19 +64,19 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ session_id, user_id, onSend }) 
       <div className="border-t p-4 flex items-center">
         <textarea
           className="flex-1 p-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Message..." 
+          placeholder={t('message')} 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          aria-label="Message input"
+          aria-label={t('message_input')}
           rows={1}
         />
         <button
           onClick={handleSend}
           className="ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-          aria-label="Send message"
+          aria-label={t('send_message')}
         >
-          Send
+          {t('send')}
         </button>
       </div>
     </div>

@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useTranslation from '../hooks/useTranslation';
 
 interface LoginPageProps {
   showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ showNotification }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -24,24 +25,24 @@ const LoginPage: React.FC<LoginPageProps> = ({ showNotification }) => {
       if (response.ok) {
         const { token } = await response.json();
         localStorage.setItem('token', token);
-        showNotification('Login successful!', 'success');
+        showNotification(t('login_successful'), 'success');
         navigate('/playground');
       } else {
         const { error } = await response.json();
-        showNotification(error || 'Login failed', 'error');
+        showNotification(error || t('login_failed'), 'error');
       }
     } catch (err) {
-      showNotification('An unexpected error occurred.', 'error');
+      showNotification(t('unexpected_error'), 'error');
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center">Login</h1>
+        <h1 className="text-2xl font-bold text-center">{t('login')}</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="text-sm font-medium">Email</label>
+            <label htmlFor="email" className="text-sm font-medium">{t('email')}</label>
             <input
               id="email"
               type="email"
@@ -52,7 +53,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ showNotification }) => {
             />
           </div>
           <div>
-            <label htmlFor="password" className="text-sm font-medium">Password</label>
+            <label htmlFor="password" className="text-sm font-medium">{t('password')}</label>
             <input
               id="password"
               type="password"
@@ -64,7 +65,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ showNotification }) => {
           </div>
           <div>
             <button type="submit" className="w-full px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
-              Login
+              {t('login')}
             </button>
           </div>
         </form>

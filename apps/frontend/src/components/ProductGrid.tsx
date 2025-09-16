@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
+import useTranslation from '../hooks/useTranslation';
 
 interface Product {
   id: string;
@@ -16,6 +16,7 @@ interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ onAdd }) => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {

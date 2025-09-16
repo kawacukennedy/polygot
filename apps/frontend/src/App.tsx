@@ -7,14 +7,16 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Notification from './components/Notification';
 import FirstTimeVisitorOverlay from './components/FirstTimeVisitorOverlay';
+import useTranslation from './hooks/useTranslation';
 import './App.css';
 
 function App() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [userXp, setUserXp] = useState(0);
   const [loginStreak, setLoginStreak] = useState(0);
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [isOffline, setIsOffline] = useState(false);
+
+  const { t, changeLanguage, language } = useTranslation('en');
 
   const showNotification = useCallback((message: string, type: 'success' | 'error' | 'info') => {
     setNotification({ message, type });
@@ -26,7 +28,7 @@ function App() {
 
   const gainXp = (amount: number) => {
     setUserXp(prevXp => prevXp + amount);
-    showNotification(`Gained ${amount} XP! Total: ${userXp + amount}`, 'info');
+    showNotification(t('gained_xp') + ` ${amount} XP! ` + t('total') + `: ${userXp + amount}`, 'info');
   };
 
   useEffect(() => {
@@ -39,19 +41,16 @@ function App() {
       yesterday.setDate(yesterday.getDate() - 1);
 
       if (lastLogin.toDateString() === yesterday.toDateString()) {
-        // Logged in yesterday, increment streak
         setLoginStreak(prevStreak => prevStreak + 1);
-        showNotification(`Daily login streak: ${loginStreak + 1} days!`, 'success');
+        showNotification(t('daily_login_streak') + ` ${loginStreak + 1} ` + t('days'), 'success');
       } else if (lastLogin.toDateString() !== today) {
-        // Missed a day, reset streak
         setLoginStreak(0);
       }
     } else {
-      // First login, start streak
       setLoginStreak(1);
     }
     localStorage.setItem('lastLoginDate', today);
-  }, [loginStreak, showNotification]);
+  }, [loginStreak, showNotification, t]);
 
   return (
     <Router>
@@ -59,20 +58,20 @@ function App() {
         <nav className="bg-gray-800 p-4 text-white">
           <ul className="flex space-x-4 items-center">
             <li>
-              <Link to="/" className="hover:text-gray-300">Home</Link>
+              <Link to="/" className="hover:text-gray-300">{t('home')}</Link>
             </li>
             <li>
-              <Link to="/playground" className="hover:text-gray-300">Playground</Link>
+              <Link to="/playground" className="hover:text-gray-300">{t('playground')}</Link>
             </li>
             <li>
-              <Link to="/dashboard" className="hover:text-gray-300">Dashboard</Link>
+              <Link to="/dashboard" className="hover:text-gray-300">{t('dashboard')}</Link>
             </li>
             <li className="ml-auto flex items-center">
-              <span className="text-sm text-gray-300 mr-2">XP: {userXp}</span>
-              <span className="text-sm text-gray-300 mr-2">Streak: {loginStreak} 🔥</span>
+              <span className="text-sm text-gray-300 mr-2">{t('xp')}: {userXp}</span>
+              <span className="text-sm text-gray-300 mr-2">{t('streak')}: {loginStreak} 🔥</span>
               <select
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
+                value={language}
+                onChange={(e) => changeLanguage(e.target.value)}
                 className="bg-gray-700 text-white text-sm rounded-md p-1"
               >
                 <option value="en">English</option>
@@ -83,12 +82,12 @@ function App() {
                 onClick={() => setIsOffline(prev => !prev)}
                 className={`ml-2 px-2 py-1 text-xs rounded-full ${isOffline ? 'bg-red-500' : 'bg-green-500'}`}
               >
-                {isOffline ? 'Offline' : 'Online'}
+                {isOffline ? t('offline') : t('online')}
               </button>
-              <Link to="/login" className="hover:text-gray-300 ml-2">Login</Link>
+              <Link to="/login" className="hover:text-gray-300 ml-2">{t('login')}</Link>
             </li>
             <li>
-              <Link to="/register" className="hover:text-gray-300">Register</Link>
+              <Link to="/register" className="hover:text-gray-300">{t('register')}</Link>
             </li>
           </ul>
         </nav>

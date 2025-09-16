@@ -8,6 +8,7 @@ import QuickBenchmark from '../components/QuickBenchmark';
 import ServiceList from '../components/ServiceList';
 import ChatWidget from '../components/ChatWidget';
 import LoadingSpinner from '../components/LoadingSpinner';
+import useTranslation from '../hooks/useTranslation';
 
 const services = [
   { id: 'user', label: 'User Service', description: 'Auth, profile, registration' },
@@ -48,6 +49,7 @@ interface PlaygroundPageProps {
 }
 
 const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainXp }) => {
+  const { t } = useTranslation();
   const [selectedImpl, setSelectedImpl] = useState<Record<string, string>>({
     user: 'Node.js',
     product: 'Python',
@@ -92,11 +94,11 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
       setCartItems(itemsWithDetails);
     } catch (error) {
       console.error('Error fetching cart:', error);
-      showNotification('Failed to fetch cart data.', 'error');
+      showNotification(t('failed_to_fetch_cart'), 'error');
     } finally {
       setIsLoading(false); // Set loading to false
     }
-  }, [showNotification]);
+  }, [showNotification, t]);
 
   useEffect(() => {
     fetchCart();
@@ -119,7 +121,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
   const handleSwap = (serviceId: string, impl: string) => {
     setSelectedImpl((prev) => ({ ...prev, [serviceId]: impl }));
     console.log(`Swapping ${serviceId} to ${impl}`);
-    showNotification(`Swapping ${serviceId} to ${impl}...`, 'info');
+    showNotification(t('swap_runtime') + ` ${serviceId} to ${impl}...`, 'info');
     gainXp(5); // Award XP for runtime switch
     // In a real app, this would trigger an API call and visual feedback
   };
@@ -139,11 +141,11 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       console.log(`Product ${productId} added to cart`);
-      showNotification(`Added product ${productId} to cart!`, 'success');
+      showNotification(t('added_product') + ` ${productId} ` + t('to_cart'), 'success');
       fetchCart();
     } catch (error) {
       console.error('Error adding to cart:', error);
-      showNotification('Failed to add product to cart.', 'error');
+      showNotification(t('failed_to_add_product'), 'error');
     } finally {
       setIsLoading(false); // Set loading to false
     }
@@ -152,8 +154,8 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
   const runBenchmark = () => {
     setIsBenchmarking(true);
     setBenchmarkProgress(0);
-    setBenchmarkMessage('Benchmark started...');
-    showNotification('Benchmark started...', 'info');
+    setBenchmarkMessage(t('running_benchmark'));
+    showNotification(t('running_benchmark'), 'info');
 
     let progress = 0;
     const interval = setInterval(() => {
@@ -169,8 +171,8 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
       clearInterval(interval);
       setIsBenchmarking(false);
       setBenchmarkProgress(100);
-      setBenchmarkMessage('Benchmark completed!');
-      showNotification('Benchmark completed!', 'success');
+      setBenchmarkMessage(t('benchmark_completed'));
+      showNotification(t('benchmark_completed'), 'success');
       gainXp(15); // Award XP for benchmark run
       // In a real app, this would involve an API call and processing results
     }, 3000);
@@ -185,7 +187,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
     <div className="flex h-screen bg-gray-100">
       {/* Left Panel */}
       <div className="w-1/4 bg-white p-6 shadow-md">
-        <h2 className="text-2xl font-bold mb-6">Services</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('services')}</h2>
         <ServiceList
           services={services}
           implementations={implementations}
@@ -197,9 +199,9 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
       {/* Center Panel */}
       <div className="w-1/2 p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Products</h2>
+          <h2 className="text-2xl font-bold">{t('products')}</h2>
           <button onClick={() => setIsCartOpen(true)} className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-            View Cart ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})
+            {t('view_cart')} ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})
           </button>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md relative">
@@ -214,11 +216,11 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
 
       {/* Right Panel */}
       <div className="w-1/4 bg-white p-6 shadow-md">
-        <h2 className="text-2xl font-bold mb-6">Metrics</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('metrics')}</h2>
         <div className="space-y-4">
           <MetricTileArea />
           <BenchmarkChart chart_types={['line', 'bar']} tooltip_format='locale' />
-          <Tooltip content="Run a short or full k6 benchmark against the chosen implementation.">
+          <Tooltip content={t('run_benchmark_tooltip')}>
             <QuickBenchmark
               default_duration_s={10}
               allow_full_run={true}
@@ -239,7 +241,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
 
         {/* Recommended Runtimes */}
         <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">Recommended Runtimes</h2>
+          <h2 className="text-xl font-bold mb-4">{t('recommended_runtimes')}</h2>
           <ul className="space-y-2">
             <li>Node.js (for quick prototyping)</li>
             <li>Rust (for high performance)</li>
