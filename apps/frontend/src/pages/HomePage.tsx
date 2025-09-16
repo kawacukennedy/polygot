@@ -1,9 +1,12 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LanguageChip from '../components/LanguageChip';
 
-const HomePage: React.FC = () => {
+interface HomePageProps {
+  showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
+}
+
+const HomePage: React.FC<HomePageProps> = ({ showNotification }) => {
   const languages = [
     { name: 'Node.js', status: 'ready' },
     { name: 'Python', status: 'ready' },
@@ -12,6 +15,11 @@ const HomePage: React.FC = () => {
     { name: 'Elixir', status: 'ready' },
     { name: 'Java', status: 'failed' },
   ];
+
+  // Example of using showNotification (can be removed later)
+  // useEffect(() => {
+  //   showNotification('Welcome to the Home Page!', 'info');
+  // }, []);
 
   return (
     <div className="bg-gray-50 text-gray-800">
@@ -39,9 +47,7 @@ const HomePage: React.FC = () => {
             <div key={lang.name} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold">{lang.name}</h3>
-                <span className={`px-3 py-1 text-sm rounded-full ${lang.status === 'ready' ? 'bg-green-100 text-green-800' : lang.status === 'building' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                  {lang.status}
-                </span>
+                <LanguageChip language={lang.name} status={lang.status as any} />
               </div>
             </div>
           ))}
