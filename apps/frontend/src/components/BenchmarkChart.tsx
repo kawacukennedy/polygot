@@ -1,14 +1,17 @@
 import React from 'react';
 
 interface BenchmarkChartProps {
-  chart_types: Array<'line' | 'bar'>;
+  chart_types: ('line' | 'bar')[];
   tooltip_format: 'locale';
 }
 
 const BenchmarkChart: React.FC<BenchmarkChartProps> = ({ chart_types, tooltip_format }) => {
   return (
-    <div className="bg-surface-light p-4 rounded-lg shadow h-64 flex items-center justify-center text-muted">
-      <p>Benchmark Chart Placeholder (Types: {chart_types.join(', ')}, Tooltip: {tooltip_format})</p>
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <h3 className="text-md font-medium text-gray-500">Benchmark Chart</h3>
+      <div className="h-48 bg-gray-200 rounded-md flex items-center justify-center mt-2">
+        <p className="text-gray-500">Chart visualization ({chart_types.join(', ')})</p>
+      </div>
     </div>
   );
 };

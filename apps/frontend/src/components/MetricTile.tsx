@@ -1,63 +1,30 @@
 import React from 'react';
 
-type Trend = 'up' | 'down' | 'flat';
-
 interface MetricTileProps {
   title: string;
   value: string | number;
   delta?: number;
-  trend?: Trend;
+  trend: 'up' | 'down' | 'flat';
   aria_label?: string;
 }
 
-const MetricTile: React.FC<MetricTileProps> = ({
-  title,
-  value,
-  delta,
-  trend = 'flat',
-  aria_label,
-}) => {
-  const getTrendIcon = (currentTrend: Trend) => {
-    switch (currentTrend) {
-      case 'up':
-        return <span className="text-success">▲</span>; // Up arrow
-      case 'down':
-        return <span className="text-danger">▼</span>; // Down arrow
-      case 'flat':
-      default:
-        return <span className="text-muted">—</span>; // Dash
-    }
-  };
-
-  const getDeltaColor = (currentTrend: Trend) => {
-    switch (currentTrend) {
-      case 'up':
-        return 'text-success';
-      case 'down':
-        return 'text-danger';
-      case 'flat':
-      default:
-        return 'text-muted';
-    }
-  };
+const MetricTile: React.FC<MetricTileProps> = ({ title, value, delta, trend, aria_label }) => {
+  const trendColor = trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500';
+  const trendArrow = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
 
   return (
-    <div className="bg-surface-light p-4 rounded-lg shadow flex flex-col justify-between"
-         aria-label={aria_label || `${title}: ${value}`}>
-      <div className="flex justify-between items-start mb-2">
-        <h4 className="text-sm font-medium text-muted">{title}</h4>
+    <div className="bg-white p-4 rounded-lg shadow-md" aria-label={aria_label || `${title} metric`}>
+      <h3 className="text-md font-medium text-gray-500">{title}</h3>
+      <div className="flex items-baseline justify-between mt-1">
+        <span className="text-2xl font-bold text-gray-900">{value}</span>
         {delta !== undefined && (
-          <div className={`flex items-center text-sm ${getDeltaColor(trend)}`}>
-            {getTrendIcon(trend)}
-            <span className="ml-1">{Math.abs(delta)}%</span>
-          </div>
+          <span className={`text-sm font-semibold ${trendColor}`}>
+            {trendArrow} {Math.abs(delta)}%
+          </span>
         )}
       </div>
-      <div className="text-3xl font-bold text-gray-900 mb-2">{value}</div>
       {/* Placeholder for sparkline */}
-      <div className="h-8 bg-gray-100 rounded-md flex items-center justify-center text-xs text-muted">
-        Sparkline Placeholder
-      </div>
+      <div className="h-4 bg-gray-200 rounded-full mt-2"></div>
     </div>
   );
 };

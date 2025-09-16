@@ -8,17 +8,13 @@ const DashboardPage: React.FC = () => {
         {/* Latency Chart */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">Latency (ms)</h2>
-          <div className="h-64 bg-gray-200 rounded-md flex items-center justify-center">
-            <p className="text-gray-500">Latency Line Chart</p>
-          </div>
+          <BenchmarkChart chart_types={['line']} tooltip_format='locale' />
         </div>
 
         {/* Memory Chart */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold mb-4">Memory Usage (MB)</h2>
-          <div className="h-64 bg-gray-200 rounded-md flex items-center justify-center">
-            <p className="text-gray-500">Memory Bar Chart</p>
-          </div>
+          <BenchmarkChart chart_types={['bar']} tooltip_format='locale' />
         </div>
       </div>
 
@@ -56,6 +52,16 @@ const DashboardPage: React.FC = () => {
 
       {/* Alerts Panel */}
       <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-4">Alerts</h2>
+        <div className="h-32 bg-gray-200 rounded-md flex items-center justify-center">
+          <p className="text-gray-500">Alerts Panel</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardPage;-6 rounded-lg shadow-md">
         <h2 className="text-xl font-bold mb-4">Alerts</h2>
         <div className="h-32 bg-gray-200 rounded-md flex items-center justify-center">
           <p className="text-gray-500">Alerts Panel</p>

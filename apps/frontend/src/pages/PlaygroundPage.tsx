@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import CartDrawer from '../components/CartDrawer';
+import MetricTileArea from '../components/MetricTileArea';
+import BenchmarkChart from '../components/BenchmarkChart';
 
 const services = [
   { id: 'user', label: 'User Service', description: 'Auth, profile, registration' },
