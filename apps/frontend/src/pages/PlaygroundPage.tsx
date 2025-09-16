@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import CartDrawer from '../components/CartDrawer';
@@ -27,6 +26,16 @@ interface CartItem {
   name: string;
   quantity: number;
   price_cents: number;
+  image_url?: string; // Added image_url
+}
+
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  price_cents: number;
+  image_url: string;
+  stock: number;
 }
 
 interface PlaygroundPageProps {
@@ -59,7 +68,21 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setCartItems(data.items || []);
+      const itemsWithDetails: CartItem[] = [];
+      for (const item of data.items || []) {
+        const productResponse = await fetch(`/api/v1/products/${item.product_id}`);
+        if (productResponse.ok) {
+          const product: Product = await productResponse.json();
+          itemsWithDetails.push({
+            ...item,
+            name: product.title,
+            image_url: product.image_url,
+          });
+        } else {
+          itemsWithDetails.push({ ...item, name: 'Unknown Product', image_url: undefined });
+        }
+      }
+      setCartItems(itemsWithDetails);
     } catch (error) {
       console.error('Error fetching cart:', error);
       showNotification('Failed to fetch cart data.', 'error');
