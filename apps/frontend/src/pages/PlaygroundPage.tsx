@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import CartDrawer from '../components/CartDrawer';
@@ -44,6 +45,7 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isBenchmarking, setIsBenchmarking] = useState(false);
+  const [benchmarkProgress, setBenchmarkProgress] = useState(0);
   const [benchmarkMessage, setBenchmarkMessage] = useState('');
 
   const fetchCart = async () => {
@@ -100,10 +102,24 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
 
   const runBenchmark = () => {
     setIsBenchmarking(true);
+    setBenchmarkProgress(0);
     setBenchmarkMessage('Benchmark started...');
     showNotification('Benchmark started...', 'info');
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      if (progress <= 100) {
+        setBenchmarkProgress(progress);
+      } else {
+        clearInterval(interval);
+      }
+    }, 300);
+
     setTimeout(() => {
+      clearInterval(interval);
       setIsBenchmarking(false);
+      setBenchmarkProgress(100);
       setBenchmarkMessage('Benchmark completed!');
       showNotification('Benchmark completed!', 'success');
       gainXp(15); // Award XP for benchmark run
@@ -164,12 +180,20 @@ const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification, gainX
             <button
               onClick={runBenchmark}
               disabled={isBenchmarking}
-              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 w-full"
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 w-full ripple-button"
             >
               {isBenchmarking ? 'Running Benchmark...' : 'Run Quick Benchmark'}
             </button>
           </Tooltip>
           {benchmarkMessage && <p className="mt-2 text-sm text-gray-600 text-center">{benchmarkMessage}</p>}
+          {isBenchmarking && (
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+              <div
+                className="bg-green-600 h-2.5 rounded-full"
+                style={{ width: `${benchmarkProgress}%` }}
+              ></div>
+            </div>
+          )}
         </div>
       </div>
 
