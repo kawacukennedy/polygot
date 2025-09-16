@@ -1,0 +1,24 @@
+name: "CI - Build & Test"
+on: [push, pull_request]
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [user, product]
+        lang: [node, python, go]
+        include:
+          - service: user
+            lang: node
+          - service: user
+            lang: go
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        if: matrix.lang == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install & Test
+        run: cd services/${{matrix.service}}/${{matrix.lang}} && npm ci && npm test

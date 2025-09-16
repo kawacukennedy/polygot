@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WASM C/C++ Example</title>
+</head>
+<body>
+    <h1>WASM C/C++ Example</h1>
+    <script>
+        var Module = {
+            onRuntimeInitialized: function() {
+                const add = Module.cwrap('add', 'number', ['number', 'number']);
+                const multiply = Module.cwrap('multiply', 'number', ['number', 'number']);
+
+                console.log("2 + 3 =", add(2, 3)); // Should log 5
+                console.log("4 * 5 =", multiply(4, 5)); // Should log 20
+
+                document.body.innerHTML += `<p>2 + 3 = ${add(2, 3)}</p>`;
+                document.body.innerHTML += `<p>4 * 5 = ${multiply(4, 5)}</p>`;
+            }
+        };
+    </script>
+    <script src="./dist/alg.js"></script>
+</body>
+</html>

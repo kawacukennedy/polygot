@@ -1,0 +1,22 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "title": "Minimalist Notebook",
+    "description": "A 100-page notebook for your thoughts.",
+    "price_cents": 1299,
+    "currency": "USD",
+    "stock": 120,
+    "image_url": "/images/notebook.jpg",
+    "category": "stationery"
+  },
+  {
+    "id": "b2c3d4e5-f6a7-8901-2345-67890abcdef0",
+    "title": "Mechanical Keyboard",
+    "description": "High-quality mechanical keyboard with tactile switches.",
+    "price_cents": 8999,
+    "currency": "USD",
+    "stock": 30,
+    "image_url": "/images/keyboard.jpg",
+    "category": "electronics"
+  }
+]

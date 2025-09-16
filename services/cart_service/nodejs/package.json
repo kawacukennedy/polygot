@@ -1,0 +1,13 @@
+{
+  "name": "cart-service-nodejs",
+  "version": "1.0.0",
+  "description": "Node.js implementation of the Cart Service",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "pg": "^8.7.1"
+  }
+}

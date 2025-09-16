@@ -1,0 +1,181 @@
+version: '3.8'
+
+services:
+  gateway:
+    image: registry.example.com/polyglot/gateway:latest
+    ports:
+      - "80:8080"
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: polyglot
+      POSTGRES_USER: pp
+      POSTGRES_PASSWORD: pp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  user-go:
+    build: ../../services/user_service/go
+    ports:
+      - "3000:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  user-node:
+    build: ../../services/user_service/nodejs
+    ports:
+      - "3001:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  user-py:
+    build: ../../services/user_service/python
+    ports:
+      - "3002:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  user-rust:
+    build: ../../services/user_service/rust
+    ports:
+      - "3003:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+
+  product-go:
+    build: ../../services/product_service/go
+    ports:
+      - "3100:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  product-node:
+    build: ../../services/product_service/nodejs
+    ports:
+      - "3101:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  product-py:
+    build: ../../services/product_service/python
+    ports:
+      - "3102:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+
+  cart-go:
+    build: ../../services/cart_service/go
+    ports:
+      - "3200:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  cart-node:
+    build: ../../services/cart_service/nodejs
+    ports:
+      - "3201:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  cart-py:
+    build: ../../services/cart_service/python
+    ports:
+      - "3202:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+
+  chat-node:
+    build: ../../services/chat_service/nodejs
+    ports:
+      - "3301:8080"
+
+  analytics-go:
+    build: ../../services/analytics_service/go
+    ports:
+      - "3400:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  analytics-node:
+    build: ../../services/analytics_service/nodejs
+    ports:
+      - "3401:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  analytics-py:
+    build: ../../services/analytics_service/python
+    ports:
+      - "3402:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+
+  search-go:
+    build: ../../services/search_service/go
+    ports:
+      - "3500:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+  search-rust:
+    build: ../../services/search_service/rust
+    ports:
+      - "3501:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=pp
+      - DB_PASSWORD=pp
+      - DB_NAME=polyglot
+
+  worker-py:
+    build: ../../services/worker_service/python
+    environment:
+      - REDIS_URL=redis://redis:6379
+  worker-rust:
+    build: ../../services/worker_service/rust
+    environment:
+      - REDIS_URL=redis://redis:6379
+
+volumes:
+  pgdata:

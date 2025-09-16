@@ -1,0 +1,296 @@
+openapi: 3.0.3
+info:
+  title: Polyglot Playground API
+  version: 1.0.0
+  description: Unified gateway API which forwards to specific service implementations. Admin endpoints used for runtime swap and benchmark control.
+servers:
+  - url: https://demo.example.com
+paths:
+  /api/v1/auth/register:
+    post:
+      summary: Register new user (demo mode)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: Email already exists
+  /api/v1/auth/login:
+    post:
+      summary: Login and receive JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /api/v1/products:
+    get:
+      summary: List products
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: search query
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+  /api/v1/cart:
+    post:
+      summary: Add item to cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCart'
+      responses:
+        '200':
+          description: OK
+    get:
+      summary: Get cart by session
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /api/v1/services:
+    get:
+      summary: List available implementations
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceImplementation'
+  /api/v1/admin/swap_runtime:
+    post:
+      summary: Swap runtime for a demo session
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwapRuntimeRequest'
+      responses:
+        '200':
+          description: Swapped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwapRuntimeResponse'
+        '400':
+          description: Invalid request
+  /api/v1/benchmarks/run:
+    post:
+      summary: Start a benchmark run
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BenchmarkRequest'
+      responses:
+        '202':
+          description: Benchmark started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BenchmarkResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        display_name:
+          type: string
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        expires_in:
+          type: integer
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        display_name:
+          type: string
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        price_cents:
+          type: integer
+        currency:
+          type: string
+        stock:
+          type: integer
+        image_url:
+          type: string
+    ProductList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        meta:
+          type: object
+    AddToCart:
+      type: object
+      required:
+        - product_id
+        - quantity
+      properties:
+        product_id:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+    Cart:
+      type: object
+      properties:
+        id:
+          type: string
+        session_id:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+              quantity:
+                type: integer
+              price_cents:
+                type: integer
+    ServiceImplementation:
+      type: object
+      properties:
+        id:
+          type: string
+        service_name:
+          type: string
+        language:
+          type: string
+        framework:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+        avg_latency_ms:
+          type: number
+        memory_mb:
+          type: number
+        repo_url:
+          type: string
+        docker_image:
+          type: string
+    SwapRuntimeRequest:
+      type: object
+      required:
+        - service
+        - implementation_id
+        - session_id
+      properties:
+        service:
+          type: string
+        implementation_id:
+          type: string
+        session_id:
+          type: string
+    SwapRuntimeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+    BenchmarkRequest:
+      type: object
+      required:
+        - target_service
+        - implementation_id
+        - duration_seconds
+      properties:
+        target_service:
+          type: string
+        implementation_id:
+          type: string
+        duration_seconds:
+          type: integer
+    BenchmarkResponse:
+      type: object
+      properties:
+        run_id:
+          type: string
+        status:
+          type: string
