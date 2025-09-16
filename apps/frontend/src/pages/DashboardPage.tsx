@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MetricTileArea from '../components/MetricTileArea';
 import BenchmarkChart from '../components/BenchmarkChart';
@@ -81,6 +80,22 @@ const DashboardPage: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Leaderboards Panel */}
+      <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-4">Leaderboards</h2>
+        <div className="h-32 bg-gray-200 rounded-md flex items-center justify-center">
+          <p className="text-gray-500">Leaderboards will be here</p>
+        </div>
+      </div>
+
+      {/* Badges Panel */}
+      <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-4">Badges</h2>
+        <div className="h-32 bg-gray-200 rounded-md flex items-center justify-center">
+          <p className="text-gray-500">Badges will be here</p>
         </div>
       </div>
 

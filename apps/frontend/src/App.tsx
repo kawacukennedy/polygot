@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -13,6 +14,7 @@ function App() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [userXp, setUserXp] = useState(0);
   const [loginStreak, setLoginStreak] = useState(0);
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
     setNotification({ message, type });
@@ -68,7 +70,16 @@ function App() {
             <li className="ml-auto flex items-center">
               <span className="text-sm text-gray-300 mr-2">XP: {userXp}</span>
               <span className="text-sm text-gray-300 mr-2">Streak: {loginStreak} 🔥</span>
-              <Link to="/login" className="hover:text-gray-300">Login</Link>
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="bg-gray-700 text-white text-sm rounded-md p-1"
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+              </select>
+              <Link to="/login" className="hover:text-gray-300 ml-2">Login</Link>
             </li>
             <li>
               <Link to="/register" className="hover:text-gray-300">Register</Link>
