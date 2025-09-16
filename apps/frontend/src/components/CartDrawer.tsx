@@ -67,9 +67,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
                             <div className="ml-4 flex-1 flex flex-col">
                               <div>
                                 <div className="flex justify-between text-base font-medium text-gray-900">
-                                  <h3>
-                                    <a href="#"> {item.name} </a>
-                                  </h3>
+                                  <button className="text-base font-medium text-gray-900"> {item.name} </button>
                                   <p className="ml-4">${(item.price_cents / 100).toFixed(2)}</p>
                                 </div>
                                 <p className="mt-1 text-sm text-gray-500">Qty: {item.quantity}</p>
@@ -112,3 +110,4 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
 };
 
 export default CartDrawer;
+default CartDrawer;

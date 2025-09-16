@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
 
@@ -10,13 +11,16 @@ interface Product {
   stock: number;
 }
 
-const ProductGrid: React.FC = () => {
+interface ProductGridProps {
+  onAdd: (productId: string) => void;
+}
+
+const ProductGrid: React.FC<ProductGridProps> = ({ onAdd }) => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // This will be the endpoint of our product service
         const response = await fetch('/api/v1/products');
         const data = await response.json();
         setProducts(data.items);
@@ -28,8 +32,6 @@ const ProductGrid: React.FC = () => {
     fetchProducts();
   }, []);
 
-  
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {products.map((product) => (
@@ -37,28 +39,11 @@ const ProductGrid: React.FC = () => {
           key={product.id}
           id={product.id}
           title={product.title}
-          short_description={product.description} // Assuming full description for now
+          short_description={product.description}
           price_cents={product.price_cents}
-          image_url={product.image_url || 'https://via.placeholder.com/300'} // Placeholder image
+          image_url={product.image_url || 'https://via.placeholder.com/300'}
           stock={product.stock}
-          onAdd={handleAddToCart}
-        />
-      ))}
-    </div>
-  );
-};
-
-export default ProductGrid;<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          id={product.id}
-          title={product.title}
-          short_description={product.description} // Assuming full description for now
-          price_cents={product.price_cents}
-          image_url={product.image_url || 'https://via.placeholder.com/300'} // Placeholder image
-          stock={product.stock}
-          onAdd={handleAddToCart}
+          onAdd={onAdd}
         />
       ))}
     </div>
