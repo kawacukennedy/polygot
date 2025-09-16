@@ -1,15 +1,18 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const LoginPage: React.FC = () => {
+interface LoginPageProps {
+  showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
+}
+
+const LoginPage: React.FC<LoginPageProps> = ({ showNotification }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     try {
       const response = await fetch('/api/v1/auth/login', {
@@ -21,13 +24,14 @@ const LoginPage: React.FC = () => {
       if (response.ok) {
         const { token } = await response.json();
         localStorage.setItem('token', token);
+        showNotification('Login successful!', 'success');
         navigate('/playground');
       } else {
         const { error } = await response.json();
-        setError(error || 'Login failed');
+        showNotification(error || 'Login failed', 'error');
       }
     } catch (err) {
-      setError('An unexpected error occurred.');
+      showNotification('An unexpected error occurred.', 'error');
     }
   };
 
@@ -35,7 +39,6 @@ const LoginPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center">Login</h1>
-        {error && <p className="text-red-500 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="text-sm font-medium">Email</label>

@@ -1,16 +1,19 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const RegisterPage: React.FC = () => {
+interface RegisterPageProps {
+  showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
+}
+
+const RegisterPage: React.FC<RegisterPageProps> = ({ showNotification }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     try {
       const response = await fetch('/api/v1/auth/register', {
@@ -20,13 +23,14 @@ const RegisterPage: React.FC = () => {
       });
 
       if (response.status === 201) {
+        showNotification('Registration successful! Please log in.', 'success');
         navigate('/login');
       } else {
         const { error } = await response.json();
-        setError(error || 'Registration failed');
+        showNotification(error || 'Registration failed', 'error');
       }
     } catch (err) {
-      setError('An unexpected error occurred.');
+      showNotification('An unexpected error occurred.', 'error');
     }
   };
 
@@ -34,7 +38,6 @@ const RegisterPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center">Register</h1>
-        {error && <p className="text-red-500 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="displayName" className="text-sm font-medium">Display Name</label>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import CartDrawer from '../components/CartDrawer';
@@ -28,7 +29,11 @@ interface CartItem {
   price_cents: number;
 }
 
-const PlaygroundPage: React.FC = () => {
+interface PlaygroundPageProps {
+  showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
+}
+
+const PlaygroundPage: React.FC<PlaygroundPageProps> = ({ showNotification }) => {
   const [selectedImpl, setSelectedImpl] = useState<Record<string, string>>({
     user: 'Node.js',
     product: 'Python',
@@ -48,10 +53,14 @@ const PlaygroundPage: React.FC = () => {
           'X-Session-ID': 'some-hardcoded-session-id',
         },
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setCartItems(data.items || []);
     } catch (error) {
       console.error('Error fetching cart:', error);
+      showNotification('Failed to fetch cart data.', 'error');
     }
   };
 
@@ -62,12 +71,13 @@ const PlaygroundPage: React.FC = () => {
   const handleSwap = (serviceId: string, impl: string) => {
     setSelectedImpl((prev) => ({ ...prev, [serviceId]: impl }));
     console.log(`Swapping ${serviceId} to ${impl}`);
+    showNotification(`Swapping ${serviceId} to ${impl}...`, 'info');
     // In a real app, this would trigger an API call and visual feedback
   };
 
   const handleAddToCart = async (productId: string) => {
     try {
-      await fetch('/api/v1/cart', {
+      const response = await fetch('/api/v1/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,19 +85,26 @@ const PlaygroundPage: React.FC = () => {
         },
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       console.log(`Product ${productId} added to cart`);
+      showNotification(`Added product ${productId} to cart!`, 'success');
       fetchCart();
     } catch (error) {
       console.error('Error adding to cart:', error);
+      showNotification('Failed to add product to cart.', 'error');
     }
   };
 
   const runBenchmark = () => {
     setIsBenchmarking(true);
     setBenchmarkMessage('Benchmark started...');
+    showNotification('Benchmark started...', 'info');
     setTimeout(() => {
       setIsBenchmarking(false);
       setBenchmarkMessage('Benchmark completed!');
+      showNotification('Benchmark completed!', 'success');
       // In a real app, this would involve an API call and processing results
     }, 3000);
   };
