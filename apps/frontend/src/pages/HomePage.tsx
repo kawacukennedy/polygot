@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LanguageChip from '../components/LanguageChip';
@@ -46,6 +45,11 @@ const HomePage: React.FC<HomePageProps> = ({ showNotification, gainXp }) => {
           </button>
         </div>
       </header>
+
+      {/* Seasonal Event Banner */}
+      <section className="bg-yellow-400 text-yellow-900 py-4 text-center font-semibold">
+        🎉 Join our Summer Code Festival! Special badges and XP bonuses all month! 🎉
+      </section>
 
       {/* Language Grid */}
       <main className="container mx-auto px-6 py-16">
