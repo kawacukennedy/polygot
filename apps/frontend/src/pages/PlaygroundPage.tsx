@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import CartDrawer from '../components/CartDrawer';
@@ -35,6 +36,8 @@ const PlaygroundPage: React.FC = () => {
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isBenchmarking, setIsBenchmarking] = useState(false);
+  const [benchmarkMessage, setBenchmarkMessage] = useState('');
 
   const fetchCart = async () => {
     try {
@@ -44,7 +47,6 @@ const PlaygroundPage: React.FC = () => {
         },
       });
       const data = await response.json();
-      // The cart service returns items in a nested 'items' property
       setCartItems(data.items || []);
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -58,6 +60,7 @@ const PlaygroundPage: React.FC = () => {
   const handleSwap = (serviceId: string, impl: string) => {
     setSelectedImpl((prev) => ({ ...prev, [serviceId]: impl }));
     console.log(`Swapping ${serviceId} to ${impl}`);
+    // In a real app, this would trigger an API call and visual feedback
   };
 
   const handleAddToCart = async (productId: string) => {
@@ -71,10 +74,20 @@ const PlaygroundPage: React.FC = () => {
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
       console.log(`Product ${productId} added to cart`);
-      fetchCart(); // Refresh cart after adding an item
+      fetchCart();
     } catch (error) {
       console.error('Error adding to cart:', error);
     }
+  };
+
+  const runBenchmark = () => {
+    setIsBenchmarking(true);
+    setBenchmarkMessage('Benchmark started...');
+    setTimeout(() => {
+      setIsBenchmarking(false);
+      setBenchmarkMessage('Benchmark completed!');
+      // In a real app, this would involve an API call and processing results
+    }, 3000);
   };
 
   return (
@@ -84,14 +97,14 @@ const PlaygroundPage: React.FC = () => {
         <h2 className="text-2xl font-bold mb-6">Services</h2>
         <div className="space-y-4">
           {services.map((service) => (
-            <div key={service.id} className="p-4 border rounded-lg">
+            <div key={service.id} className="p-4 border rounded-lg focus-within:ring-2 focus-within:ring-indigo-500 hover:border-indigo-500 transition-all duration-200">
               <h3 className="font-bold">{service.label}</h3>
               <p className="text-sm text-gray-600">{service.description}</p>
               <div className="mt-2">
                 <select
                   value={selectedImpl[service.id]}
                   onChange={(e) => handleSwap(service.id, e.target.value)}
-                  className="w-full p-2 border rounded-md"
+                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
                 >
                   {implementations[service.id as keyof typeof implementations].map((impl) => (
                     <option key={impl} value={impl}>
@@ -123,6 +136,14 @@ const PlaygroundPage: React.FC = () => {
         <h2 className="text-2xl font-bold mb-6">Metrics</h2>
         <div className="bg-white p-6 rounded-lg shadow-md">
             <p>Metrics will be here</p>
+            <button
+              onClick={runBenchmark}
+              disabled={isBenchmarking}
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+            >
+              {isBenchmarking ? 'Running Benchmark...' : 'Run Quick Benchmark'}
+            </button>
+            {benchmarkMessage && <p className="mt-2 text-sm text-gray-600">{benchmarkMessage}</p>}
         </div>
       </div>
 
