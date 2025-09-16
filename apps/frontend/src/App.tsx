@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import PlaygroundPage from './pages/PlaygroundPage';
@@ -13,6 +12,7 @@ import './App.css';
 function App() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [userXp, setUserXp] = useState(0);
+  const [loginStreak, setLoginStreak] = useState(0);
 
   const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
     setNotification({ message, type });
@@ -22,11 +22,34 @@ function App() {
     setNotification(null);
   };
 
-  // Placeholder for XP gain logic
   const gainXp = (amount: number) => {
     setUserXp(prevXp => prevXp + amount);
     showNotification(`Gained ${amount} XP! Total: ${userXp + amount}`, 'info');
   };
+
+  useEffect(() => {
+    const lastLoginDate = localStorage.getItem('lastLoginDate');
+    const today = new Date().toDateString();
+
+    if (lastLoginDate) {
+      const lastLogin = new Date(lastLoginDate);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (lastLogin.toDateString() === yesterday.toDateString()) {
+        // Logged in yesterday, increment streak
+        setLoginStreak(prevStreak => prevStreak + 1);
+        showNotification(`Daily login streak: ${loginStreak + 1} days!`, 'success');
+      } else if (lastLogin.toDateString() !== today) {
+        // Missed a day, reset streak
+        setLoginStreak(0);
+      }
+    } else {
+      // First login, start streak
+      setLoginStreak(1);
+    }
+    localStorage.setItem('lastLoginDate', today);
+  }, []);
 
   return (
     <Router>
@@ -42,8 +65,9 @@ function App() {
             <li>
               <Link to="/dashboard" className="hover:text-gray-300">Dashboard</Link>
             </li>
-            <li className="ml-auto">
+            <li className="ml-auto flex items-center">
               <span className="text-sm text-gray-300 mr-2">XP: {userXp}</span>
+              <span className="text-sm text-gray-300 mr-2">Streak: {loginStreak} 🔥</span>
               <Link to="/login" className="hover:text-gray-300">Login</Link>
             </li>
             <li>
