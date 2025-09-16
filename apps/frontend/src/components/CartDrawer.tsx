@@ -58,7 +58,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
 
                 <div className="mt-8">
                   <div className="flow-root">
-                    <ul role="list" className="-my-6 divide-y divide-gray-200">
+                    <ul className="-my-6 divide-y divide-gray-200">
                       {items.length === 0 ? (
                         <li className="py-6 text-center text-muted">Your cart is empty.</li>
                       ) : (
@@ -88,12 +88,11 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
                 </div>
                 <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
                 <div className="mt-6">
-                  <a
-                    href="#"
+                  <button
                     className="flex items-center justify-center rounded-md border border-transparent bg-primary px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-primary_600"
                   >
                     Checkout
-                  </a>
+                  </button>
                 </div>
                 <div className="mt-6 flex justify-center text-sm text-center text-gray-500">
                   <p>
@@ -110,4 +109,3 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, items }) => {
 };
 
 export default CartDrawer;
-default CartDrawer;
