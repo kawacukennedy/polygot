@@ -5,6 +5,11 @@ import PlaygroundPage from './pages/PlaygroundPage';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import UserProfilePage from './pages/UserProfilePage'; // Import the new UserProfilePage
+import CreateSnippetPage from './pages/CreateSnippetPage'; // Import the new CreateSnippetPage
+import ExecuteSnippetPage from './pages/ExecuteSnippetPage'; // Import the new ExecuteSnippetPage
+import AdminUsersPage from './pages/AdminUsersPage'; // Import the new AdminUsersPage
+import TopUsersAnalyticsPage from './pages/TopUsersAnalyticsPage'; // Import the new TopUsersAnalyticsPage
 import Notification from './components/Notification';
 import FirstTimeVisitorOverlay from './components/FirstTimeVisitorOverlay';
 import useTranslation from './hooks/useTranslation';
@@ -66,6 +71,21 @@ function App() {
             <li>
               <Link to="/dashboard" className="hover:text-gray-300">{t('dashboard')}</Link>
             </li>
+            <li>
+              <Link to="/users/a1b2c3d4-e5f6-7890-1234-567890abcdef" className="hover:text-gray-300">User Profile</Link>
+            </li>
+            <li>
+              <Link to="/snippets/new" className="hover:text-gray-300">Create Snippet</Link>
+            </li>
+            <li>
+              <Link to="/snippets/a1b2c3d4-e5f6-7890-1234-567890abcdef/run" className="hover:text-gray-300">Run Snippet</Link>
+            </li>
+            <li>
+              <Link to="/admin/users" className="hover:text-gray-300">Admin Users</Link>
+            </li>
+            <li>
+              <Link to="/analytics/top-users" className="hover:text-gray-300">Top Users Analytics</Link>
+            </li>
             <li className="ml-auto flex items-center">
               <span className="text-sm text-gray-300 mr-2">{t('xp')}: {userXp}</span>
               <span className="text-sm text-gray-300 mr-2">{t('streak')}: {loginStreak} 🔥</span>
@@ -96,8 +116,13 @@ function App() {
           <Route path="/" element={<HomePage showNotification={showNotification} gainXp={gainXp} />} />
           <Route path="/playground" element={<PlaygroundPage showNotification={showNotification} gainXp={gainXp} />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/login" element={<LoginPage showNotification={showNotification} />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage showNotification={showNotification} />} />
+          <Route path="/users/:id" element={<UserProfilePage />} />
+          <Route path="/snippets/new" element={<CreateSnippetPage />} />
+          <Route path="/snippets/:id/run" element={<ExecuteSnippetPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/analytics/top-users" element={<TopUsersAnalyticsPage />} />
         </Routes>
 
         {notification && (
@@ -115,3 +140,5 @@ function App() {
 }
 
 export default App;
+
+

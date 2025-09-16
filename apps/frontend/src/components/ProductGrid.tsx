@@ -16,7 +16,7 @@ interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ onAdd }) => {
-  const { t } = useTranslation();
+  useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {

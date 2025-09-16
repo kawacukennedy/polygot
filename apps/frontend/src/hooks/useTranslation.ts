@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import translations from '../translations';
 
 interface UseTranslationResult {

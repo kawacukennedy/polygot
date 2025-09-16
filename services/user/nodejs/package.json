@@ -1,5 +1,5 @@
 {
-  "name": "user-service-nodejs",
+  "name": "user-nodejs",
   "version": "1.0.0",
   "description": "Node.js implementation of the User Service",
   "main": "dist/index.js",
