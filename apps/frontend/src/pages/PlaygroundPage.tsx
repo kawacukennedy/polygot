@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import ProductGrid from '../components/ProductGrid';
 import CartDrawer from '../components/CartDrawer';
 import MetricTileArea from '../components/MetricTileArea';
 import BenchmarkChart from '../components/BenchmarkChart';
+import Tooltip from '../components/Tooltip';
 
 const services = [
   { id: 'user', label: 'User Service', description: 'Auth, profile, registration' },
@@ -100,21 +100,23 @@ const PlaygroundPage: React.FC = () => {
         <div className="space-y-4">
           {services.map((service) => (
             <div key={service.id} className="p-4 border rounded-lg focus-within:ring-2 focus-within:ring-indigo-500 hover:border-indigo-500 transition-all duration-200">
-              <h3 className="font-bold">{service.label}</h3>
-              <p className="text-sm text-gray-600">{service.description}</p>
-              <div className="mt-2">
-                <select
-                  value={selectedImpl[service.id]}
-                  onChange={(e) => handleSwap(service.id, e.target.value)}
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-                >
-                  {implementations[service.id as keyof typeof implementations].map((impl) => (
-                    <option key={impl} value={impl}>
-                      {impl}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Tooltip content="Swap the runtime used by this demo session. This only affects your session.">
+                <h3 className="font-bold">{service.label}</h3>
+                <p className="text-sm text-gray-600">{service.description}</p>
+                <div className="mt-2">
+                  <select
+                    value={selectedImpl[service.id]}
+                    onChange={(e) => handleSwap(service.id, e.target.value)}
+                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                  >
+                    {implementations[service.id as keyof typeof implementations].map((impl) => (
+                      <option key={impl} value={impl}>
+                        {impl}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </Tooltip>
             </div>
           ))}
         </div>
@@ -136,16 +138,19 @@ const PlaygroundPage: React.FC = () => {
       {/* Right Panel */}
       <div className="w-1/4 bg-white p-6 shadow-md">
         <h2 className="text-2xl font-bold mb-6">Metrics</h2>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-            <p>Metrics will be here</p>
+        <div className="space-y-4">
+          <MetricTileArea />
+          <BenchmarkChart chart_types={['line', 'bar']} tooltip_format='locale' />
+          <Tooltip content="Run a short or full k6 benchmark against the chosen implementation.">
             <button
               onClick={runBenchmark}
               disabled={isBenchmarking}
-              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 w-full"
             >
               {isBenchmarking ? 'Running Benchmark...' : 'Run Quick Benchmark'}
             </button>
-            {benchmarkMessage && <p className="mt-2 text-sm text-gray-600">{benchmarkMessage}</p>}
+          </Tooltip>
+          {benchmarkMessage && <p className="mt-2 text-sm text-gray-600 text-center">{benchmarkMessage}</p>}
         </div>
       </div>
 
