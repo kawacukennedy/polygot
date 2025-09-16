@@ -1,6 +1,39 @@
+
 import React from 'react';
+import MetricTileArea from '../components/MetricTileArea';
+import BenchmarkChart from '../components/BenchmarkChart';
 
 const DashboardPage: React.FC = () => {
+  const recentRuns = [
+    {
+      run_id: 'run-xyz-123',
+      service: 'product_service',
+      impl: 'python',
+      duration: '30s',
+      p95: '85ms',
+      status: 'Completed',
+      timestamp: '2025-09-16 10:00:00',
+    },
+    {
+      run_id: 'run-abc-456',
+      service: 'user_service',
+      impl: 'nodejs',
+      duration: '25s',
+      p95: '120ms',
+      status: 'Failed',
+      timestamp: '2025-09-16 09:30:00',
+    },
+    {
+      run_id: 'run-def-789',
+      service: 'cart_service',
+      impl: 'python',
+      duration: '35s',
+      p95: '90ms',
+      status: 'Completed',
+      timestamp: '2025-09-16 09:00:00',
+    },
+  ];
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
@@ -35,16 +68,17 @@ const DashboardPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="text-gray-700">
-              {/* Placeholder row */}
-              <tr>
-                <td className="py-3 px-4">run-xyz-123</td>
-                <td className="py-3 px-4">product_service</td>
-                <td className="py-3 px-4">python</td>
-                <td className="py-3 px-4">30s</td>
-                <td className="py-3 px-4">85ms</td>
-                <td className="py-3 px-4">Completed</td>
-                <td className="py-3 px-4">2025-09-16 10:00:00</td>
-              </tr>
+              {recentRuns.map((run) => (
+                <tr key={run.run_id}>
+                  <td className="py-3 px-4">{run.run_id}</td>
+                  <td className="py-3 px-4">{run.service}</td>
+                  <td className="py-3 px-4">{run.impl}</td>
+                  <td className="py-3 px-4">{run.duration}</td>
+                  <td className="py-3 px-4">{run.p95}</td>
+                  <td className="py-3 px-4">{run.status}</td>
+                  <td className="py-3 px-4">{run.timestamp}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -52,16 +86,6 @@ const DashboardPage: React.FC = () => {
 
       {/* Alerts Panel */}
       <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-bold mb-4">Alerts</h2>
-        <div className="h-32 bg-gray-200 rounded-md flex items-center justify-center">
-          <p className="text-gray-500">Alerts Panel</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default DashboardPage;-6 rounded-lg shadow-md">
         <h2 className="text-xl font-bold mb-4">Alerts</h2>
         <div className="h-32 bg-gray-200 rounded-md flex items-center justify-center">
           <p className="text-gray-500">Alerts Panel</p>
