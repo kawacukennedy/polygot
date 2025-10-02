@@ -21,6 +21,10 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 
+// Import new pages
+import SignupPage from './pages/Signup';
+import LoginPage from './pages/LoginPage';
+
 // Placeholder Components
 const HomePage = () => (
   <Box sx={{ p: 3 }}>
@@ -78,8 +82,8 @@ const Header = ({ toggleTheme, mode, handleDrawerToggle }) => (
       <Button color="inherit" component={RouterLink} to="/snippets">Snippets</Button>
       <Button color="inherit" component={RouterLink} to="/leaderboard">Leaderboard</Button>
       <Button color="inherit" component={RouterLink} to="/profile">Profile</Button>
-      {/* Admin link - will be conditionally rendered based on role later */}
-      <Button color="inherit" component={RouterLink} to="/admin">Admin</Button>
+      <Button color="inherit" component={RouterLink} to="/signup">Sign Up</Button>
+      <Button color="inherit" component={RouterLink} to="/login">Log In</Button>
       <IconButton sx={{ ml: 1 }} onClick={toggleTheme} color="inherit">
         {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
       </IconButton>
@@ -204,6 +208,8 @@ function App() {
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<LoginPage />} />
           </Routes>
         </Box>
         <Sidebar mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
