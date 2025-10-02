@@ -17,6 +17,18 @@ import { getPopularLanguages, getRecentExecutions } from '../services/api';
 import { PopularLanguage, RecentExecution } from '../types/Home';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -120,13 +132,24 @@ const HomePage: React.FC = () => {
         ) : errorLanguages ? (
           <Alert severity="error">{errorLanguages}</Alert>
         ) : (popularLanguages.length > 0 ? (
-          <List>
-            {popularLanguages.map((lang) => (
-              <ListItem key={lang.language}>
-                <ListItemText primary={`${lang.language}: ${lang.count} snippets`} />
-              </ListItem>
-            ))}
-          </List>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={popularLanguages}
+              margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="language" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="count" fill="#8884d8" name="Snippets Count" />
+            </BarChart>
+          </ResponsiveContainer>
         ) : (
           <Typography variant="body2" color="text.secondary">No popular languages data available.</Typography>
         ))}

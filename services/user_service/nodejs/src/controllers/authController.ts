@@ -62,14 +62,23 @@ export const login = async (req: Request, res: Response) => {
     const user = result.rows[0];
 
     if (!user) {
-      return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+      return res.status(401).json({ status: 'error', error_code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' });
     }
+
+    // Placeholder for account locked logic
+    // if (user.login_attempts >= 5 && user.last_login_attempt > (Date.now() - 30 * 60 * 1000)) { // e.g., locked for 30 mins
+    //   return res.status(403).json({ status: 'error', error_code: 'ACCOUNT_LOCKED', message: 'Account locked after multiple failed attempts' });
+    // }
 
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!passwordMatch) {
-      return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
+      // In a real app, you would increment login attempts here
+      return res.status(401).json({ status: 'error', error_code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' });
     }
+
+    // Reset login attempts on successful login
+    // await pool.query('UPDATE users SET login_attempts = 0 WHERE id = $1', [user.id]);
 
     const accessToken = jwt.sign({ userId: user.id }, config.jwt.access_token_secret, { expiresIn: config.jwt.access_token_expiry });
     const refreshToken = jwt.sign({ userId: user.id }, config.jwt.refresh_token_secret, { expiresIn: config.jwt.refresh_token_expiry });

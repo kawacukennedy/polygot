@@ -1,103 +1,167 @@
-# Polyglot Playground
+# PolyglotCodeHub
 
-## Project Description
-The Polyglot Playground is a platform designed to showcase and compare backend services implemented in various programming languages. It features a React-based frontend, a Node.js user service, and a PostgreSQL database, all orchestrated using Docker Compose. This project aims to provide a flexible environment for exploring different language implementations and their performance characteristics.
+## Cross-language collaborative code snippet platform with execution, sharing, leaderboards, analytics, and gamification.
+
+PolyglotCodeHub is a modern web application designed to empower developers to write, run, share, and collaborate on code snippets across various programming languages. It features a robust backend with multiple microservices, a dynamic React frontend, and a comprehensive set of tools for code management, execution, and community interaction.
 
 ## Features
-- **User Authentication:** Secure user login and registration.
-- **User Profile Management:** View and manage user details.
-- **Code Snippet Management:** Create, store, and execute code snippets in various languages.
-- **Admin User Management:** (Admin-only) View and manage registered users.
-- **Analytics:** View top users based on code snippet activity.
-- **Dockerized Environment:** Easy setup and deployment using Docker Compose.
 
-## Tech Stack
+- **User Authentication**: Secure signup, login, and session management with JWTs.
+- **Code Snippet Management**: Create, edit, view, and delete code snippets with syntax highlighting and autosave using the Monaco Editor.
+- **Real-time Code Execution**: Execute code snippets in an isolated environment with real-time status updates via WebSockets.
+- **Profile Management**: Users can update their profile information, change passwords, and upload avatars.
+- **Leaderboards**: Track and display top users based on their activity and contributions.
+- **Admin Panel**: Comprehensive tools for administrators to manage users, snippets, and executions, and monitor system health.
+- **Responsive UI**: A modern, intuitive, and responsive user interface with light/dark theme toggling and animations.
+- **API-driven Microservices**: A modular backend architecture built with Node.js microservices for scalability and maintainability.
+- **CI/CD**: Automated build, test, and deployment pipelines using GitHub Actions for both frontend and backend services.
+
+## Technologies Used
 
 ### Frontend
-- **Framework:** React
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **Routing:** React Router DOM
+- **React**: A JavaScript library for building user interfaces.
+- **Material-UI (MUI)**: A comprehensive suite of UI tools for faster and easier web development.
+- **Monaco Editor**: The code editor that powers VS Code, integrated for rich code editing.
+- **Socket.IO Client**: For real-time communication with the execution service.
+- **Recharts**: A composable charting library built on React components.
+- **React Router DOM**: For declarative routing in React applications.
 
-### Backend (User Service)
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **Language:** JavaScript (with TypeScript for type definitions)
-- **Database ORM/Client:** `pg` (PostgreSQL client)
-- **Authentication:** `bcrypt` for password hashing, `jsonwebtoken` for JWTs
-- **Middleware:** `body-parser`, `cors`
+### Backend (Node.js Microservices)
+- **Express.js**: A fast, unopinionated, minimalist web framework for Node.js.
+- **PostgreSQL**: A powerful, open-source object-relational database system.
+- **pg**: Non-blocking PostgreSQL client for Node.js.
+- **bcrypt**: For hashing passwords securely.
+- **jsonwebtoken**: For implementing JSON Web Token (JWT) based authentication.
+- **Socket.IO**: For real-time, bidirectional event-based communication.
+- **dotenv**: To load environment variables from a `.env` file.
+- **cors**: Node.js package for providing a Connect/Express middleware that can be used to enable CORS.
 
-### Database
-- **Type:** PostgreSQL
-- **Version:** 15.4
-- **Schema:**
-    - `users`: Stores user information (email, password hash, created_at).
-    - `snippets`: Stores code snippets (title, language, code, visibility).
-    - `executions`: Stores snippet execution details (input, output, status, runtime).
-
-### Infrastructure
-- **Containerization:** Docker
-- **Orchestration:** Docker Compose
+### Other Tools & Services
+- **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript.
+- **Docker**: For containerization of backend services.
+- **GitHub Actions**: For Continuous Integration and Continuous Deployment (CI/CD).
+- **Vercel**: For hosting the frontend application.
+- **Railway**: For hosting the backend microservices.
+- **Supabase**: Provides PostgreSQL database and file storage.
+- **Render**: For hosting isolated code execution workers.
+- **Sentry**: For application monitoring and error tracking.
 
 ## Getting Started
 
+Follow these instructions to set up and run the PolyglotCodeHub project locally.
+
 ### Prerequisites
-- Docker Desktop installed and running on your machine.
 
-### Installation and Setup
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/kawacukennedy/polygot.git
-    cd polygot
-    ```
-2.  **Navigate to the Docker Compose directory:**
-    ```bash
-    cd infra/docker
-    ```
-3.  **Build and run the services:**
-    ```bash
-    docker-compose up --build
-    ```
-    This command will:
-    - Build the Docker images for the frontend and user service.
-    - Start the PostgreSQL database.
-    - Start the Node.js user service.
-    - Start the Nginx server to serve the React frontend.
+- Node.js (v18 or later)
+- npm (v8 or later)
+- Docker (optional, but recommended for local backend development)
+- PostgreSQL database (local or remote, e.g., via Supabase)
 
-### Accessing the Application
-- **Frontend:** Once all services are up, open your web browser and navigate to `http://localhost:3000`.
-- **Backend (User Service API):** The user service API is accessible at `http://localhost:8080/api/v1`.
+### 1. Clone the Repository
 
-## Project Structure
-```
-.
-├── apps/                 # Frontend and mobile applications
-│   ├── frontend/         # React frontend application
-│   └── mobile/           # Mobile application (e.g., Flutter)
-├── benchmarks/           # Performance benchmarks
-├── docs/                 # Documentation
-├── infra/                # Infrastructure configurations
-│   ├── docker/           # Docker Compose setup
-│   └── k8s/              # Kubernetes configurations
-├── migrations/           # Database migration scripts
-├── services/             # Backend microservices
-│   ├── user_service/     # User management service
-│   │   └── nodejs/       # Node.js implementation of user service
-│   └── ...               # Other services (product, cart, analytics, etc.)
-└── tools/                # Development tools
+```bash
+git clone https://github.com/your-username/polyglotcodehub.git
+cd polyglotcodehub
 ```
 
-## API Endpoints (User Service)
-- `POST /api/v1/auth/register`: Register a new user.
-- `POST /api/v1/auth/login`: Authenticate a user and get session tokens.
-- `GET /api/v1/users/:id`: Fetch details of a specific user.
-- `POST /api/v1/snippets`: Create a new code snippet.
-- `POST /api/v1/snippets/:id/run`: Execute a code snippet.
-- `GET /api/v1/admin/users`: (Admin) Fetch a list of all registered users.
-- `GET /api/v1/analytics/top-users`: Fetch top users based on analytics.
+### 2. Database Setup
 
-## Contributing
-Contributions are welcome! Please refer to `CONTRIBUTING.md` for guidelines.
+PolyglotCodeHub uses PostgreSQL. You'll need a running PostgreSQL instance. You can use a local setup or a cloud provider like Supabase.
 
-## License
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+#### Local PostgreSQL Setup (Example using Docker)
+
+```bash
+docker run --name polyglot-postgres -e POSTGRES_USER=pp -e POSTGRES_PASSWORD=pp -e POSTGRES_DB=polyglot -p 5432:5432 -d postgres
+```
+
+#### Apply Migrations
+
+Navigate to the project root and apply the database migrations. You can use `psql` for this:
+
+```bash
+# Connect to your database
+psql -U pp -d polyglot -h localhost -p 5432
+
+# Inside psql, execute migration files one by one
+\i migrations/001_create_users_products_carts.sql
+\i migrations/002_create_benchmark_results.sql
+\i migrations/003_create_snippets_table.sql
+\i migrations/004_add_user_details_to_users_table.sql
+\i migrations/005_create_executions_table.sql
+
+# Or from your shell directly (replace credentials as needed)
+psql -U pp -d polyglot -h localhost -p 5432 -f migrations/001_create_users_products_carts.sql
+# ... repeat for other migration files
+psql -U pp -d polyglot -h localhost -p 5432 -f migrations/005_create_executions_table.sql
+```
+
+### 3. Backend Services Setup
+
+Each backend service is a Node.js application. You'll need to configure environment variables for each.
+
+#### Environment Variables (`.env` files)
+
+Create a `.env` file in each service directory (`services/user_service/nodejs`, `services/snippet_service/nodejs`, etc.) based on the `config/index.ts` files. Here's an example for `services/user_service/nodejs/.env`:
+
+```
+PORT=3001
+DB_HOST=localhost
+DB_NAME=polyglot
+DB_USER=pp
+DB_PASSWORD=pp
+ACCESS_TOKEN_SECRET=your_access_token_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
+SUPABASE_URL=YOUR_SUPABASE_URL
+SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
+
+Adjust `PORT` and database credentials as per your setup. Ensure `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` are strong, unique values.
+
+#### Install Dependencies and Run Services
+
+For each Node.js service, navigate to its directory, install dependencies, and start it in development mode:
+
+```bash
+# User Service
+cd services/user_service/nodejs
+npm install
+npm run dev &
+
+# Snippet Service
+cd ../snippet_service/nodejs
+npm install
+npm run dev &
+
+# Analytics Service
+cd ../analytics_service/nodejs
+npm install
+npm run dev &
+
+# Execution Service
+cd ../execution_service/nodejs
+npm install
+npm run dev &
+```
+
+### 4. Frontend Application Setup
+
+```bash
+cd apps/frontend
+npm install
+
+# Create a .env file for frontend (e.g., apps/frontend/.env)
+# REACT_APP_API_BASE_URL=http://localhost:3001/api/v1
+
+npm start
+```
+
+The frontend application should now be running at `http://localhost:3000` (or another port if configured).
+
+## CI/CD
+
+This project uses GitHub Actions for Continuous Integration and Continuous Deployment. Workflows are defined in the `.github/workflows/` directory.
+
+- `frontend.yml`: Builds and deploys the frontend application to Vercel on pushes to the `main` branch within the `apps/frontend` directory.
+- `backend.yml`: Builds and deploys backend services to Railway on pushes to the `main` branch within the `services/` directory.
+
+Refer to `DEPLOYMENT.md` for detailed deployment instructions and environment variable configurations for production environments.

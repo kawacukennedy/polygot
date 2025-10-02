@@ -1,0 +1,48 @@
+name: Deploy Backend Services to Railway
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/**'
+
+jobs:
+  deploy-user-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Install dependencies (User Service)
+        run: npm install
+        working-directory: ./services/user_service/nodejs
+
+      - name: Build User Service
+        run: npm run build
+        working-directory: ./services/user_service/nodejs
+
+      - name: Deploy User Service to Railway
+        run: railway deploy --service user-service-nodejs --commit-hash ${{ github.sha }}
+        working-directory: ./services/user_service/nodejs
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          # Add other environment variables for the service (e.g., DB_HOST, DB_NAME, etc.)
+          # DB_HOST: ${{ secrets.DB_HOST }}
+          # DB_NAME: ${{ secrets.DB_NAME }}
+          # DB_USER: ${{ secrets.DB_USER }}
+          # DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          # ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+          # REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+
+  # Add similar jobs for other services (snippet, analytics, execution)
+  # deploy-snippet-service:
+  #   ...
