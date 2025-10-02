@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS benchmark_results (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), implementation_id TEXT NOT NULL, service_name TEXT NOT NULL, run_at TIMESTAMPTZ DEFAULT now(), duration_seconds INT, p50_ms FLOAT, p95_ms FLOAT, p99_ms FLOAT, rps FLOAT, memory_peak_mb FLOAT, errors INT, raw_output TEXT);

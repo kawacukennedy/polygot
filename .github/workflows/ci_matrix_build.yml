@@ -1,0 +1,69 @@
+
+name: "CI - Build & Test"
+on: [push, pull_request]
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [user_service, product_service, cart_service, chat_service]
+        lang: [nodejs, python, go]
+        exclude:
+          - service: product_service
+            lang: go
+          - service: product_service
+            lang: rust
+          - service: cart_service
+            lang: go
+          - service: cart_service
+            lang: rust
+          - service: chat_service
+            lang: python
+          - service: chat_service
+            lang: go
+          - service: chat_service
+            lang: rust
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        if: matrix.lang == 'nodejs'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Set up Python
+        if: matrix.lang == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Set up Go
+        if: matrix.lang == 'go'
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.19'
+
+      - name: Install and Test (Node.js)
+        if: matrix.lang == 'nodejs'
+        run: |
+          cd services/${{matrix.service}}/${{matrix.lang}}
+          npm install
+          # npm test # No tests yet
+
+      - name: Install and Test (Python)
+        if: matrix.lang == 'python'
+        run: |
+          cd services/${{matrix.service}}/${{matrix.lang}}
+          pip install -r requirements.txt
+          # pytest # No tests yet
+
+      - name: Install and Test (Go)
+        if: matrix.lang == 'go'
+        run: |
+          cd services/${{matrix.service}}/${{matrix.lang}}
+          go mod tidy
+          go build ./...
+          # go test ./... # No tests yet

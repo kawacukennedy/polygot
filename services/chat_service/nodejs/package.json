@@ -1,0 +1,16 @@
+{
+  "name": "chat-service-nodejs",
+  "version": "1.0.0",
+  "description": "Node.js implementation of the Chat Service",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "mkdir -p dist && echo \"console.log('Chat Service Node.js running');\" > dist/index.js"
+  },
+  "dependencies": {
+    "socket.io": "4.x"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

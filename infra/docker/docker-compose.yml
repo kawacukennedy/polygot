@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: polyglot
+      POSTGRES_USER: pp
+      POSTGRES_PASSWORD: pp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../migrations:/docker-entrypoint-initdb.d # Mount migrations
+
+  user_service:
+    build: ../../services/user_service/nodejs
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: polyglot
+      DB_USER: pp
+      DB_PASSWORD: pp
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ../../apps/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - user_service
+
+volumes:
+  postgres_data:

@@ -1,0 +1,13 @@
+{
+  "name": "polyglot-playground",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*/*"
+  ],
+  "scripts": {
+    "install:frontend": "npm install --prefix apps/frontend",
+    "start:frontend": "npm start --prefix apps/frontend"
+  }
+}
