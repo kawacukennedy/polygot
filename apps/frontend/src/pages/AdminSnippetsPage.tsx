@@ -44,8 +44,11 @@ const AdminSnippetsPage: React.FC = () => {
   }, [page, perPage]);
 
   const handleDeleteSnippet = (snippetId: string) => {
-    console.log(`Delete snippet ${snippetId}`);
-    // TODO: Implement API call to delete snippet
+    if (window.confirm(`Are you sure you want to delete snippet ${snippetId}?`)) {
+      console.log(`Delete snippet ${snippetId}`);
+      // TODO: Implement API call to delete snippet
+      setSnippets(prevSnippets => prevSnippets.filter(snippet => snippet.id !== snippetId));
+    }
   };
 
   const handleFlagSnippet = (snippetId: string) => {
@@ -64,31 +67,31 @@ const AdminSnippetsPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4">Admin Snippet Management</h1>
-      <div className="bg-white shadow-md rounded-lg p-6">
+      <div className="bg-light-background dark:bg-dark-background shadow-md rounded-lg p-6">
         {snippets.length === 0 ? (
-          <p>No snippets found.</p>
+          <p className="text-light-text_secondary dark:text-dark-text_secondary">No snippets found.</p>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visibility</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">ID</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Title</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Language</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Visibility</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Created At</th>
                 <th scope="col" className="relative px-6 py-3">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-light-background dark:bg-dark-background divide-y divide-gray-200 dark:divide-gray-700">
               {snippets.map((snippet) => (
                 <tr key={snippet.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{snippet.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{snippet.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{snippet.language}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{snippet.visibility}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(snippet.created_at).toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light-text_primary dark:text-dark-text_primary">{snippet.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text_primary dark:text-dark-text_primary">{snippet.title}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text_primary dark:text-dark-text_primary">{snippet.language}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text_primary dark:text-dark-text_primary">{snippet.visibility}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text_primary dark:text-dark-text_primary">{new Date(snippet.created_at).toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => handleDeleteSnippet(snippet.id)} className="text-red-600 hover:text-red-900 mr-4">Delete</button>
                     <button onClick={() => handleFlagSnippet(snippet.id)} className="text-yellow-600 hover:text-yellow-900">Flag</button>
@@ -103,15 +106,15 @@ const AdminSnippetsPage: React.FC = () => {
           <button
             onClick={() => setPage(prev => Math.max(1, prev - 1))}
             disabled={page === 1 || loading}
-            className="px-4 py-2 border rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200"
+            className="px-4 py-2 border rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-700 text-light-text_primary dark:text-dark-text_primary hover:bg-gray-200 dark:hover:bg-gray-600"
           >
             Previous
           </button>
-          <span className="text-sm text-gray-700">Page {page}</span>
+          <span className="text-sm text-light-text_secondary dark:text-dark-text_secondary">Page {page}</span>
           <button
             onClick={() => setPage(prev => prev + 1)}
             disabled={loading || snippets.length < perPage}
-            className="px-4 py-2 border rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200"
+            className="px-4 py-2 border rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-700 text-light-text_primary dark:text-dark-text_primary hover:bg-gray-200 dark:hover:bg-gray-600"
           >
             Next
           </button>

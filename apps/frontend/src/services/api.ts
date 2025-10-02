@@ -274,3 +274,21 @@ export async function updateUser(userId: string, userData: { name?: string; bio?
 
   return data;
 }
+
+export async function fetchExecutions(token: string, page: number = 1, perPage: number = 20): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/admin/executions?page=${page}&per_page=${perPage}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    return { status: 'error', message: data.message || 'Failed to fetch executions', error_code: data.error_code };
+  }
+
+  return data;
+}

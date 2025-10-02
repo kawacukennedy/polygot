@@ -18,6 +18,7 @@ import './App.css';
 
 function App() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const showNotification = useCallback((message: string, type: 'success' | 'error' | 'info') => {
     setNotification({ message, type });
@@ -27,13 +28,17 @@ function App() {
     setNotification(null);
   };
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-light-background dark:bg-dark-background">
-        <Header />
+        <Header toggleMobileMenu={toggleMobileMenu} isMobileMenuOpen={isMobileMenuOpen} />
         <div className="flex flex-1">
-          <Sidebar />
-          <main className="flex-1 p-4">
+          <Sidebar isMobileMenuOpen={isMobileMenuOpen} toggleMobileMenu={toggleMobileMenu} />
+          <main className="flex-1 p-4 transition-all duration-300 ease-in-out md:ml-0">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/snippets" element={<SnippetsPage />} />

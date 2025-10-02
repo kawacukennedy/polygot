@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchSnippets } from '../services/api';
 
 const SnippetsPage = () => {
@@ -12,6 +12,7 @@ const SnippetsPage = () => {
   const [visibilityFilter, setVisibilityFilter] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const navigate = useNavigate();
 
   const loadSnippets = useCallback(async () => {
     setLoading(true);
@@ -59,6 +60,23 @@ const SnippetsPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  const handleEdit = (snippetId: string) => {
+    // Placeholder for edit logic
+    console.log(`Edit snippet with ID: ${snippetId}`);
+    navigate(`/snippets/edit/${snippetId}`); // Assuming an edit route
+  };
+
+  const handleDelete = async (snippetId: string) => {
+    // Placeholder for delete logic
+    if (window.confirm(`Are you sure you want to delete snippet ${snippetId}?`)) {
+      console.log(`Delete snippet with ID: ${snippetId}`);
+      // Call API to delete snippet
+      // await deleteSnippet(snippetId, token);
+      // After successful deletion, refresh the list or remove the snippet from state
+      setSnippets(prevSnippets => prevSnippets.filter(snippet => snippet.id !== snippetId));
+    }
+  };
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-4">Snippets</h1>
@@ -102,7 +120,7 @@ const SnippetsPage = () => {
       {!loading && !error && snippets.length === 0 ? (
         <div className="text-center py-8 text-light-text_secondary dark:text-dark-text_secondary">
           <span className="text-2xl">📄</span>
-          <p>No snippets found. Why not create one?</p>
+          <p>No snippets yet. Create one!</p>
         </div>
       ) : (
         <div className="bg-light-background dark:bg-dark-background shadow-md rounded-lg">
@@ -124,8 +142,8 @@ const SnippetsPage = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{snippet.visibility}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{new Date(snippet.created_at).toLocaleDateString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-light-accent dark:text-dark-accent hover:underline mr-4">Edit</button>
-                    <button className="text-red-500 hover:underline mr-4">Delete</button>
+                    <button onClick={() => handleEdit(snippet.id)} className="text-light-accent dark:text-dark-accent hover:underline mr-4">Edit</button>
+                    <button onClick={() => handleDelete(snippet.id)} className="text-red-500 hover:underline mr-4">Delete</button>
                     <Link to={`/snippets/run/${snippet.id}`} className="text-green-500 hover:underline">Run</Link>
                   </td>
                 </tr>
