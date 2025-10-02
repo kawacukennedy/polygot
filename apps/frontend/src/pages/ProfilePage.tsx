@@ -21,8 +21,13 @@ import { Snippet } from '../types/Snippet';
 import { User } from '../types/User';
 import { useNotification } from '../contexts/NotificationContext';
 
-// Placeholder components for ProfilePage sections
-const AvatarUpload = ({ userId, currentAvatar, onAvatarChange }) => {
+interface AvatarUploadProps {
+  userId: string;
+  currentAvatar?: string;
+  onAvatarChange: (newAvatarUrl: string) => void;
+}
+
+const AvatarUpload: React.FC<AvatarUploadProps> = ({ userId, currentAvatar, onAvatarChange }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -110,8 +115,14 @@ const AvatarUpload = ({ userId, currentAvatar, onAvatarChange }) => {
   );
 };
 
-const EditableFields = ({ user, onFieldChange, onSave, loading }) => {
-  const { showNotification } = useNotification();
+interface EditableFieldsProps {
+  user: User | null;
+  onFieldChange: (field: keyof User, value: string) => void;
+  onSave: () => Promise<void>;
+  loading: boolean;
+}
+
+const EditableFields: React.FC<EditableFieldsProps> = ({ user, onFieldChange, onSave, loading }) => {
   return (
     <Box sx={{ mb: 3 }}>
       <Typography variant="h6" gutterBottom>Profile Information</Typography>
@@ -148,7 +159,11 @@ const EditableFields = ({ user, onFieldChange, onSave, loading }) => {
   );
 };
 
-const PasswordChange = ({ userId }) => {
+interface PasswordChangeProps {
+  userId: string;
+}
+
+const PasswordChange: React.FC<PasswordChangeProps> = ({ userId }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -215,7 +230,11 @@ const PasswordChange = ({ userId }) => {
   );
 };
 
-const UserSnippets = ({ userId }) => {
+interface UserSnippetsProps {
+  userId: string;
+}
+
+const UserSnippets: React.FC<UserSnippetsProps> = ({ userId }) => {
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [loading, setLoading] = useState(true);
   const { showNotification } = useNotification();
@@ -287,7 +306,7 @@ const ProfilePage: React.FC = () => {
 
     setLoadingProfileSave(true);
     try {
-      const response = await updateUserProfile(user.id, editableUser.name, editableUser.email, editableUser.bio);
+      const response = await updateUserProfile(user.id, editableUser.name, editableUser.email, editableUser.bio || '');
       if (response.ok) {
         const updatedUserData = await response.json();
         setUser(updatedUserData); // Update user in AuthContext
