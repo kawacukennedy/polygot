@@ -1,43 +1,38 @@
 import React, { useState } from 'react';
-import { TextField, Button, Typography, Box, Container, Alert } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Container,
+  Alert,
+  Link as MuiLink,
+} from '@mui/material';
+import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 
-const LoginPage = () => {
+const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError('');
 
     if (!email || !password) {
-      setError('Email and password are required.');
+      showNotification('Email and password are required.', 'error');
       return;
     }
 
-    try {
-      const response = await fetch('http://localhost:3001/api/v1/auth/login', { // Assuming user service runs on port 3001
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Handle successful login, e.g., store JWT token
-        console.log('Login successful:', data);
-        // For now, just redirect to home
-        navigate('/');
-      } else {
-        setError(data.message || 'Login failed.');
-      }
-    } catch (err) {
-      setError('Network error. Please try again later.');
+    const success = await login(email, password);
+    if (success) {
+      showNotification('Login successful!', 'success');
+      navigate('/'); // Redirect to home page on successful login
+    } else {
+      showNotification('Login failed. Invalid credentials or account locked.', 'error');
     }
   };
 
@@ -55,7 +50,6 @@ const LoginPage = () => {
           Log In
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-          {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
           <TextField
             margin="normal"
             required
@@ -88,17 +82,12 @@ const LoginPage = () => {
           >
             Log In
           </Button>
-          <Typography variant="body2" align="center">
-            Don't have an account? {' '}
-            <RouterLink to="/signup" style={{ textDecoration: 'none', color: 'inherit' }}>
-              Sign Up
-            </RouterLink>
-          </Typography>
-          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-            <RouterLink to="/forgot-password" style={{ textDecoration: 'none', color: 'inherit' }}>
-              Forgot password?
-            </RouterLink>
-          </Typography>
+          <MuiLink component="button" variant="body2" onClick={() => navigate('/signup')}>
+            {"Don't have an account? Sign Up"}
+          </MuiLink>
+          <MuiLink component="button" variant="body2" sx={{ ml: 2 }}>
+            Forgot password?
+          </MuiLink>
         </Box>
       </Box>
     </Container>

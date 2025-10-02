@@ -1,14 +1,6 @@
 
 import { Request, Response } from 'express';
-import { Pool } from 'pg';
-import config from '../config';
-
-const pool = new Pool({
-  host: config.db.host,
-  database: config.db.database,
-  user: config.db.user,
-  password: config.db.password,
-});
+import pool from '../db'; // Import the shared database pool
 
 export const getAdminUsers = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;

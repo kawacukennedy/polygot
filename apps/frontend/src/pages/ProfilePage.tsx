@@ -1,196 +1,332 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Button,
+  Container,
+  Paper,
+  TextField,
+  Alert,
+  Avatar,
+  IconButton,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+} from '@mui/material';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import { useAuth } from '../contexts/AuthContext';
+import { updateUserProfile, changeUserPassword, uploadAvatar, getSnippets } from '../services/api';
+import { Snippet } from '../types/Snippet';
+import { User } from '../types/User';
+import { useNotification } from '../contexts/NotificationContext';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { fetchUser, updateUser } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+// Placeholder components for ProfilePage sections
+const AvatarUpload = ({ userId, currentAvatar, onAvatarChange }) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const { showNotification } = useNotification();
 
-interface ProfilePageProps {
-  showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
-}
+  useEffect(() => {
+    if (selectedFile) {
+      const objectUrl = URL.createObjectURL(selectedFile);
+      setPreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+  }, [selectedFile]);
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ showNotification }) => {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [bio, setBio] = useState('');
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        showNotification('File size exceeds 5MB limit.', 'error');
+        setSelectedFile(null);
+        setPreview(null);
+        return;
+      }
+      const allowedFormats = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedFormats.includes(file.type)) {
+        showNotification('Only JPG, PNG, WEBP formats are allowed.', 'error');
+        setSelectedFile(null);
+        setPreview(null);
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile || !userId) return;
+
+    setUploading(true);
+    try {
+      const response = await uploadAvatar(userId, selectedFile);
+      if (response.ok) {
+        const data = await response.json();
+        showNotification('Avatar uploaded successfully!', 'success');
+        onAvatarChange(data.avatarUrl); // Update parent component with new avatar URL
+        setSelectedFile(null);
+        setPreview(null);
+      } else {
+        const errorData = await response.json();
+        showNotification(errorData.message || 'Failed to upload avatar.', 'error');
+      }
+    } catch (err) {
+      showNotification('Network error during avatar upload.', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Typography variant="h6" gutterBottom>Profile Picture</Typography>
+      <Avatar
+        src={preview || currentAvatar || '/static/images/avatar/1.jpg'} // Default avatar
+        sx={{ width: 100, height: 100, mb: 2 }}
+      />
+      <input
+        accept="image/jpeg,image/png,image/webp"
+        style={{ display: 'none' }}
+        id="icon-button-file"
+        type="file"
+        onChange={handleFileChange}
+      />
+      <label htmlFor="icon-button-file">
+        <IconButton color="primary" aria-label="upload picture" component="span">
+          <PhotoCamera />
+        </IconButton>
+      </label>
+      {selectedFile && (
+        <Box sx={{ mt: 1, textAlign: 'center' }}>
+          <Typography variant="body2">{selectedFile.name}</Typography>
+          <Button variant="contained" size="small" sx={{ mt: 1 }} onClick={handleUpload} disabled={uploading}>
+            {uploading ? <CircularProgress size={24} /> : 'Upload'}
+          </Button>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+const EditableFields = ({ user, onFieldChange, onSave, loading }) => {
+  const { showNotification } = useNotification();
+  return (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="h6" gutterBottom>Profile Information</Typography>
+      <TextField
+        label="Name"
+        fullWidth
+        margin="normal"
+        value={user?.name || ''}
+        onChange={(e) => onFieldChange('name', e.target.value)}
+      />
+      <TextField
+        label="Email"
+        fullWidth
+        margin="normal"
+        value={user?.email || ''}
+        onChange={(e) => onFieldChange('email', e.target.value)}
+        disabled // Email is often not editable directly
+      />
+      <TextField
+        label="Bio"
+        fullWidth
+        margin="normal"
+        multiline
+        rows={4}
+        value={user?.bio || ''}
+        onChange={(e) => onFieldChange('bio', e.target.value)}
+      />
+      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button variant="contained" onClick={onSave} disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : 'Save Changes'}
+        </Button>
+      </Box>
+    </Box>
+  );
+};
+
+const PasswordChange = ({ userId }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const navigate = useNavigate();
-
-  const userId = '123'; // Placeholder for logged-in user ID
-
-  const loadUser = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const token = localStorage.getItem('session_token');
-    if (!token) {
-      setError('Authentication token not found. Please log in.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const data = await fetchUser(userId, token);
-      if (data.status === 'error') {
-        setError(data.message);
-      } else {
-        setUser(data);
-        setName(data.name || '');
-        setEmail(data.email || '');
-        setBio(data.bio || '');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
+  const [loading, setLoading] = useState(false);
+  const { showNotification } = useNotification();
 
   const validatePassword = (password: string) => {
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters long.';
-    }
-    if (!/[!@#$%^&*(),.?\":{}|<>]/g.test(password)) {
-      return 'Password must contain at least one special character.';
-    }
-    return null;
+    const hasMinLength = password.length >= 8;
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    return hasMinLength && hasSpecialChar && hasUppercase && hasLowercase && hasNumber;
   };
 
-  const handleSave = async () => {
-    const token = localStorage.getItem('session_token');
-    if (!token) {
-      showNotification('Authentication token not found. Please log in.', 'error');
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      showNotification('All password fields are required.', 'error');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      showNotification('New password and confirmation do not match.', 'error');
+      return;
+    }
+    if (!validatePassword(newPassword)) {
+      showNotification('New password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.', 'error');
       return;
     }
 
-    let hasError = false;
-    const userData: { name?: string; bio?: string; current_password?: string; new_password?: string } = {};
-
-    if (name !== user.name) userData.name = name;
-    if (bio !== user.bio) userData.bio = bio;
-
-    if (newPassword) {
-      const passwordError = validatePassword(newPassword);
-      if (passwordError) {
-        showNotification(passwordError, 'error');
-        hasError = true;
-      }
-      if (newPassword !== confirmNewPassword) {
-        showNotification('New password and confirmation do not match.', 'error');
-        hasError = true;
-      }
-      if (!currentPassword) {
-        showNotification('Current password is required to change password.', 'error');
-        hasError = true;
-      }
-      if (!hasError) {
-        userData.current_password = currentPassword;
-        userData.new_password = newPassword;
-      }
-    }
-
-    if (hasError) return;
-
+    setLoading(true);
     try {
-      const data = await updateUser(userId, userData, token);
-      if (data.status === 'error') {
-        showNotification(data.message, 'error');
-      } else {
-        showNotification('Profile updated successfully!', 'success');
-        setUser(data); // Update local user state with new data
+      const response = await changeUserPassword(userId, currentPassword, newPassword);
+      if (response.ok) {
+        showNotification('Password changed successfully!', 'success');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmNewPassword('');
+      } else {
+        const errorData = await response.json();
+        showNotification(errorData.message || 'Failed to change password.', 'error');
       }
-    } catch (err: any) {
-      showNotification(err.message || 'An unexpected error occurred.', 'error');
+    } catch (err) {
+      showNotification('Network error during password change.', 'error');
+    } finally {
+      setLoading(false);
     }
   };
-
-  const handleCancel = () => {
-    // Revert changes to original user data
-    if (user) {
-      setName(user.name || '');
-      setEmail(user.email || '');
-      setBio(user.bio || '');
-    }
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmNewPassword('');
-    showNotification('Changes cancelled.', 'info');
-  };
-
-  if (loading) return <p className="text-[var(--color-text-secondary)]">Loading profile...</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
 
   return (
-    <div className="bg-[var(--color-background)] shadow-md rounded-lg p-6">
-      <h1 className="text-3xl font-bold mb-6 text-[var(--color-text-primary)]">Profile Settings</h1>
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="h6" gutterBottom>Change Password</Typography>
+      <Paper sx={{ p: 2 }}>
+        <TextField label="Current Password" type="password" fullWidth margin="normal" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+        <TextField label="New Password" type="password" fullWidth margin="normal" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+          error={!!newPassword && !validatePassword(newPassword)}
+          helperText={!!newPassword && !validatePassword(newPassword) ? 'Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char' : ''}
+        />
+        <TextField label="Confirm New Password" type="password" fullWidth margin="normal" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
+        <Button variant="contained" sx={{ mt: 2 }} onClick={handleChangePassword} disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : 'Change Password'}
+        </Button>
+      </Paper>
+    </Box>
+  );
+};
 
-      {/* Avatar Upload */}
-      <div className="mb-6 flex items-center">
-        <img src="https://via.placeholder.com/100" alt="User Avatar" className="w-24 h-24 rounded-full mr-4 border-2 border-[var(--color-accent)]" />
-        <div>
-          <label htmlFor="avatar-upload" className="cursor-pointer bg-[var(--color-button-secondary)] text-white px-4 py-2 rounded-md hover:opacity-90 transition-opacity duration-200">
-            Upload Avatar
-          </label>
-          <input id="avatar-upload" type="file" className="hidden" accept=".jpg,.png,.webp" />
-          <p className="text-sm text-[var(--color-text-secondary)] mt-1">Max 5MB, JPG, PNG, WEBP</p>
-        </div>
-      </div>
+const UserSnippets = ({ userId }) => {
+  const [snippets, setSnippets] = useState<Snippet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { showNotification } = useNotification();
 
-      {/* Editable Fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)]">Name</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} className="mt-1 block w-full p-2 border border-[var(--color-text-secondary)]/30 rounded-md shadow-sm bg-[var(--color-background)] text-[var(--color-text-primary)]" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)]">Email</label>
-          <input type="email" value={email} disabled className="mt-1 block w-full p-2 border border-[var(--color-text-secondary)]/30 rounded-md shadow-sm bg-[var(--color-text-secondary)]/10 text-[var(--color-text-secondary)] cursor-not-allowed" />
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-[var(--color-text-primary)]">Bio</label>
-          <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} className="mt-1 block w-full p-2 border border-[var(--color-text-secondary)]/30 rounded-md shadow-sm bg-[var(--color-background)] text-[var(--color-text-primary)]"></textarea>
-        </div>
-      </div>
+  useEffect(() => {
+    const fetchUserSnippets = async () => {
+      setLoading(true);
+      try {
+        const response = await getSnippets();
+        if (response.ok) {
+          const data = await response.json();
+          setSnippets(data);
+        } else {
+          const errorData = await response.json();
+          showNotification(errorData.message || 'Failed to fetch user snippets', 'error');
+        }
+      } catch (err) {
+        showNotification('Network error while fetching user snippets', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (userId) {
+      fetchUserSnippets();
+    }
+  }, [userId]);
 
-      {/* Password Change */}
-      <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">Change Password</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)]">Current Password</label>
-          <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="mt-1 block w-full p-2 border border-[var(--color-text-secondary)]/30 rounded-md shadow-sm bg-[var(--color-background)] text-[var(--color-text-primary)]" />
-        </div>
-        <div></div> {/* Empty div for spacing */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)]">New Password</label>
-          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="mt-1 block w-full p-2 border border-[var(--color-text-secondary)]/30 rounded-md shadow-sm bg-[var(--color-background)] text-[var(--color-text-primary)]" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)]">Confirm New Password</label>
-          <input type="password" value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)} className="mt-1 block w-full p-2 border border-[var(--color-text-secondary)]/30 rounded-md shadow-sm bg-[var(--color-background)] text-[var(--color-text-primary)]" />
-        </div>
-      </div>
+  if (loading) return <CircularProgress />;
 
-      {/* User Snippets (Placeholder) */}
-      <h2 className="text-2xl font-bold mb-4 text-[var(--color-text-primary)]">My Snippets</h2>
-      <div className="bg-[var(--color-text-secondary)]/10 p-4 rounded-md text-[var(--color-text-secondary)]">
-        <p>User snippets will be displayed here.</p>
-        {/* Integration with fetchUserSnippets API and a SnippetsList component would go here */}
-      </div>
+  return (
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="h6" gutterBottom>My Snippets</Typography>
+      <Paper sx={{ p: 2 }}>
+        {snippets.length > 0 ? (
+          <List> {/* Assuming List and ListItem are imported */}
+            {snippets.map((snippet) => (
+              <ListItem key={snippet.id}> {/* Assuming ListItem is imported */}
+                <ListItemText primary={snippet.title} secondary={`${snippet.language} - ${snippet.visibility}`} /> {/* Assuming ListItemText is imported */}
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body2" color="text.secondary">No snippets found.</Typography>
+        )}
+      </Paper>
+    </Box>
+  );
+};
 
-      <div className="mt-6 flex justify-end space-x-4">
-        <button onClick={handleCancel} className="px-4 py-2 border border-[var(--color-text-secondary)]/30 rounded-md text-[var(--color-text-primary)] hover:bg-[var(--color-text-secondary)]/10 transition-colors duration-200">Cancel</button>
-        <button onClick={handleSave} className="px-4 py-2 bg-[var(--color-button-primary)] text-white rounded-md hover:opacity-90 transition-opacity duration-200">Save</button>
-      </div>
-    </div>
+const ProfilePage: React.FC = () => {
+  const { user, isAuthenticated, setUser } = useAuth();
+  const [editableUser, setEditableUser] = useState<User | null>(user);
+  const [loadingProfileSave, setLoadingProfileSave] = useState(false);
+  const { showNotification } = useNotification();
+
+  useEffect(() => {
+    setEditableUser(user);
+  }, [user]);
+
+  const handleFieldChange = (field: keyof User, value: string) => {
+    setEditableUser((prev) => ({
+      ...(prev as User),
+      [field]: value,
+    }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editableUser || !user?.id) return;
+
+    setLoadingProfileSave(true);
+    try {
+      const response = await updateUserProfile(user.id, editableUser.name, editableUser.email, editableUser.bio);
+      if (response.ok) {
+        const updatedUserData = await response.json();
+        setUser(updatedUserData); // Update user in AuthContext
+        showNotification('Profile updated successfully!', 'success');
+      } else {
+        const errorData = await response.json();
+        showNotification(errorData.message || 'Update failed.', 'error');
+      }
+    } catch (err) {
+      showNotification('Network error during profile update.', 'error');
+    } finally {
+      setLoadingProfileSave(false);
+    }
+  };
+
+  const handleAvatarChange = (newAvatarUrl: string) => {
+    if (user) {
+      setUser({ ...user, avatar: newAvatarUrl });
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="warning">Please log in to view your profile.</Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <Container component="main" maxWidth="md" sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>User Profile</Typography>
+      <Paper sx={{ p: 3, mb: 3 }}>
+        {user?.id && <AvatarUpload userId={user.id} currentAvatar={user.avatar} onAvatarChange={handleAvatarChange} />}
+        <EditableFields user={editableUser} onFieldChange={handleFieldChange} onSave={handleSaveProfile} loading={loadingProfileSave} />
+        {user?.id && <PasswordChange userId={user.id} />}
+      </Paper>
+      {user?.id && <UserSnippets userId={user.id} />}
+    </Container>
   );
 };
 

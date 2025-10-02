@@ -1,82 +1,64 @@
-
 import { Request, Response } from 'express';
-import Redis from 'ioredis';
-import { v4 as uuidv4 } from 'uuid';
 import { Server } from 'socket.io';
+import { Pool } from 'pg';
 
-// Configure Redis client
-const redis = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379', 10),
-});
+interface AuthRequest extends Request {
+  user?: any; // Assuming user ID is available from JWT payload
+}
 
-// Create a separate Redis client for subscriptions
-const subscriber = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379', 10),
-});
+export const executeCodeController = async (req: AuthRequest, res: Response, io: Server, pool: Pool) => {
+  const { language, code, snippet_id } = req.body;
+  const userId = req.user.id; 
 
-export const executeCode = async (req: Request, res: Response, io: Server) => {
-  const { language, code, input, timeout_ms, socketId } = req.body;
-
-  if (!language || !code || !socketId) {
-    return res.status(400).json({ status: 'error', message: 'Language, code, and socketId are required' });
+  if (!language || !code) {
+    return res.status(400).json({ message: 'Language and code are required' });
   }
 
-  const taskId = uuidv4();
-  const taskPayload = {
-    id: taskId,
-    task: 'worker.execute_code_task',
-    args: [language, code, input, timeout_ms],
-    kwargs: {},
-    retries: 0,
-    eta: null,
-    expires: null,
-    utc: true,
-    callbacks: null,
-    errbacks: null,
-    chord: null,
-    headers: {},
-    properties: {
-      correlation_id: taskId,
-      reply_to: 'celery',
-    },
-  };
+  console.log(`User ${userId} is executing ${language} code:\n${code}`);
+
+  // Simulate execution time and result
+  const executionTime = Math.floor(Math.random() * 500) + 50; // 50-550ms
+  const success = Math.random() > 0.2; // 80% success rate
+  const status = success ? 'success' : 'failed';
+  const output = success ? `Simulated output for ${language} code. Execution time: ${executionTime}ms` : null;
+  const errorOutput = success ? null : `Simulated error during ${language} code execution.`;
+
+  // Simulate sending real-time updates via WebSocket
+  io.emit('execution_status', { userId, status: 'running', language, timestamp: new Date() });
+
+  await new Promise(resolve => setTimeout(resolve, executionTime));
 
   try {
-    // Publish task to Celery queue
-    await redis.lpush('celery', JSON.stringify(taskPayload));
+    const result = await pool.query(
+      'INSERT INTO executions (snippet_id, user_id, language, code, status, output, error, duration_ms) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;',
+      [snippet_id, userId, language, code, status, output, errorOutput, executionTime]
+    );
+    const newExecution = result.rows[0];
 
-    // Subscribe to the result channel for this task
-    const resultChannel = `celery-task-meta-${taskId}`;
-    subscriber.subscribe(resultChannel, (err) => {
-      if (err) {
-        console.error(`Failed to subscribe to ${resultChannel}:`, err);
-        io.to(socketId).emit('executionError', { message: 'Failed to subscribe to execution results' });
-        return;
-      }
-      console.log(`Subscribed to ${resultChannel}`);
-    });
+    io.emit('execution_status', { userId, status, language, output, error: errorOutput, timestamp: new Date(), executionId: newExecution.id });
 
-    subscriber.on('message', (channel, message) => {
-      if (channel === resultChannel) {
-        const result = JSON.parse(message);
-        if (result.status === 'SUCCESS') {
-          io.to(socketId).emit('executionResult', { status: 'success', ...result.result });
-        } else if (result.status === 'FAILURE') {
-          io.to(socketId).emit('executionResult', { status: 'error', message: 'Execution failed', ...result.result });
-        } else {
-          io.to(socketId).emit('executionError', { message: 'Unknown worker status', rawResult: result });
-        }
-        subscriber.unsubscribe(resultChannel);
-        subscriber.removeAllListeners('message');
-      }
-    });
+    if (success) {
+      res.json({ output, status: 'success', executionId: newExecution.id });
+    } else {
+      res.status(400).json({ message: errorOutput, status: 'error', executionId: newExecution.id });
+    }
+  } catch (err) {
+    console.error('Database error during execution save:', err);
+    io.emit('execution_status', { userId, status: 'failed', language, error: 'Internal server error', timestamp: new Date() });
+    res.status(500).json({ message: 'Internal server error', status: 'error' });
+  }
+};
 
-    res.json({ status: 'ok', message: 'Execution request sent to worker', taskId });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: 'error', message: 'Internal server error' });
+export const getRecentExecutionsController = async (req: Request, res: Response, pool: Pool) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const result = await pool.query(
+      'SELECT id, snippet_id, user_id, language, status, duration_ms, executed_at FROM executions ORDER BY executed_at DESC LIMIT $1;',
+      [limit]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Database error fetching recent executions:', err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

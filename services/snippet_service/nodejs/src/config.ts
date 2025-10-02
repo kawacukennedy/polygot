@@ -1,18 +1,10 @@
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 const config = {
-  port: process.env.PORT || 8081,
-  db: {
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'polyglot',
-    user: process.env.DB_USER || 'polyglot',
-    password: process.env.DB_PASSWORD || 'polyglot',
-  },
-  jwt: {
-    access_token_secret: process.env.JWT_ACCESS_TOKEN_SECRET || 'supersecretjwtkey',
-  },
+  port: process.env.PORT || 3002,
+  jwtSecret: process.env.JWT_SECRET || 'supersecretjwtkey',
+  databaseUrl: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/polyglot_db',
 };
 
 export default config;

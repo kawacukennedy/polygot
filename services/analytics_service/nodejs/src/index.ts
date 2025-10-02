@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import config from './config';
 import analyticsRoutes from './routes/analytics';
+import adminRoutes from './routes/admin'; // Import admin routes
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get('/healthz', (req, res) => {
 });
 
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/admin', adminRoutes); // Mount admin routes
 
 app.listen(config.port, () => {
   console.log(`Analytics service (Node.js) listening at http://localhost:${config.port}`);

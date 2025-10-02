@@ -1,19 +1,27 @@
-
 import React from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+} from '@mui/material';
 
-const Footer = () => {
+const Footer: React.FC = () => {
   return (
-    <footer className="bg-[var(--color-background)] p-4 text-center shadow-inner mt-auto">
-      <div className="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-4">
-        <a href="#" className="hover:text-[var(--color-accent)]">Privacy</a>
-        <a href="#" className="hover:text-[var(--color-accent)]">Terms</a>
-        <a href="#" className="hover:text-[var(--color-accent)]">Contact</a>
-        <a href="#" className="hover:text-[var(--color-accent)]">GitHub</a>
-      </div>
-      <p className="text-sm text-[var(--color-text-secondary)] mt-2">
-        © 2025 PolyglotCodeHub. All rights reserved.
-      </p>
-    </footer>
+    <AppBar position="static" color="primary" sx={{ top: 'auto', bottom: 0 }}>
+      <Toolbar sx={{ flexDirection: { xs: 'column', sm: 'row' }, py: { xs: 2, sm: 0 } }}>
+        <Typography variant="body2" color="inherit" sx={{ flexGrow: 1, mb: { xs: 1, sm: 0 } }}>
+          © {new Date().getFullYear()} PolyglotCodeHub
+        </Typography>
+        <Box>
+          <Button color="inherit">Privacy</Button>
+          <Button color="inherit">Terms</Button>
+          <Button color="inherit">Contact</Button>
+          <Button color="inherit" href="https://github.com/your-repo" target="_blank">GitHub</Button>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 

@@ -1,294 +1,265 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'http://localhost:3001/api/v1'; // Base URL for your backend API
 
-export async function login(email: string, password: string): Promise<any> {
+export const loginUser = async (email: string, password: string) => {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Client-Version': '1.0.0', // Assuming a client version
     },
-    body: JSON.stringify({
-      email: email.toLowerCase().trim(),
-      password: password,
-    }),
+    body: JSON.stringify({ email, password }),
   });
+  return response;
+};
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    // Handle API errors, e.g., 401 for invalid credentials
-    // The API spec shows error responses also have a 'status': 'error' field
-    return { status: 'error', message: data.message || 'Login failed', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function refreshToken(refresh_token: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      refresh_token: refresh_token,
-    }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Token refresh failed' };
-  }
-
-  return data;
-}
-
-export async function fetchUser(userId: string, token: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to fetch user', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function createSnippet(snippetData: { title: string; language: string; code: string; visibility?: 'public' | 'private' }, token: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/snippets`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(snippetData),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to create snippet', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function executeSnippet(snippetId: string, input: string = '', timeout_ms: number = 3000, token: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/snippets/${snippetId}/run`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ input, timeout_ms }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to execute snippet', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function fetchAdminUsers(token: string, page: number = 1, per_page: number = 50): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/admin/users?page=${page}&per_page=${per_page}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to fetch admin users', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function fetchTopUsers(token: string, language?: string, period?: 'daily' | 'weekly' | 'monthly'): Promise<any> {
-  let url = `${API_BASE_URL}/analytics/top-users`;
-  const params = new URLSearchParams();
-  if (language) {
-    params.append('language', language);
-  }
-  if (period) {
-    params.append('period', period);
-  }
-  if (params.toString()) {
-    url += `?${params.toString()}`;
-  }
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to fetch top users', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function fetchSnippets(token: string, language?: string, visibility?: string, searchTerm?: string, page: number = 1, pageSize: number = 20): Promise<any> {
-  let url = `${API_BASE_URL}/snippets`;
-  const params = new URLSearchParams();
-  if (language) {
-    params.append('language', language);
-  }
-  if (visibility) {
-    params.append('visibility', visibility);
-  }
-  if (searchTerm) {
-    params.append('search', searchTerm);
-  }
-  params.append('page', page.toString());
-  params.append('pageSize', pageSize.toString());
-
-  if (params.toString()) {
-    url += `?${params.toString()}`;
-  }
-
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to fetch snippets', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function fetchPopularLanguages(token: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/analytics/popular-languages`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to fetch popular languages', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function fetchRecentExecutions(token: string, limit: number = 10): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/executions/recent?limit=${limit}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to fetch recent executions', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function fetchUserSnippets(userId: string, token: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}/snippets`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to fetch user snippets', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function register(email: string, password: string, confirm_password: string): Promise<any> {
+export const signupUser = async (username: string, email: string, password: string) => {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email, password, confirm_password }),
+    body: JSON.stringify({ username, email, password }),
   });
+  return response;
+};
 
-  const data = await response.json();
+// Snippet API functions
+export const getSnippets = async () => {
+  const response = await fetch(`${API_BASE_URL}/snippets`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+  });
+  return response;
+};
 
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Registration failed', error_code: data.error_code };
-  }
+export const createSnippet = async (title: string, language: string, code: string, visibility: 'public' | 'private') => {
+  const response = await fetch(`${API_BASE_URL}/snippets`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+    body: JSON.stringify({ title, language, code, visibility }),
+  });
+  return response;
+};
 
-  return data;
-}
+export const getSnippetById = async (id: string) => {
+  const response = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+  });
+  return response;
+};
 
-export async function updateUser(userId: string, userData: { name?: string; bio?: string }, token: string): Promise<any> {
+export const updateSnippet = async (id: string, title: string, language: string, code: string, visibility: 'public' | 'private') => {
+  const response = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+    body: JSON.stringify({ title, language, code, visibility }),
+  });
+  return response;
+};
+
+export const deleteSnippet = async (id: string) => {
+  const response = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+  });
+  return response;
+};
+
+// Analytics API functions
+export const getTopUsers = async () => {
+  const response = await fetch(`${API_BASE_URL}/analytics/top-users`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+  });
+  return response;
+};
+
+export const getPopularLanguages = async () => {
+  const response = await fetch(`${API_BASE_URL}/analytics/popular-languages`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+  });
+  return response;
+};
+
+export const getRecentExecutions = async (limit: number = 10) => {
+  const response = await fetch(`${API_BASE_URL}/execute/recent?limit=${limit}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+  });
+  return response;
+};
+
+
+// User Profile API functions
+export const updateUserProfile = async (userId: string, name: string, email: string, bio: string) => {
   const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
     method: 'PUT',
     headers: {
-      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
     },
-    body: JSON.stringify(userData),
+    body: JSON.stringify({ name, email, bio }),
   });
+  return response;
+};
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to update user', error_code: data.error_code };
-  }
-
-  return data;
-}
-
-export async function fetchExecutions(token: string, page: number = 1, perPage: number = 20): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/admin/executions?page=${page}&per_page=${perPage}`, {
-    method: 'GET',
+export const changeUserPassword = async (userId: string, currentPassword: string, newPassword: string) => {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}/password`, {
+    method: 'PUT',
     headers: {
-      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
     },
+    body: JSON.stringify({ currentPassword, newPassword }),
   });
+  return response;
+};
 
-  const data = await response.json();
+export const uploadAvatar = async (userId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('avatar', file);
 
-  if (!response.ok) {
-    return { status: 'error', message: data.message || 'Failed to fetch executions', error_code: data.error_code };
-  }
+  const response = await fetch(`${API_BASE_URL}/users/${userId}/avatar`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+    body: formData,
+  });
+  return response;
+};
 
-  return data;
-}
+// Admin API functions (Placeholders)
+export const getUsersAdmin = async () => {
+  // Placeholder for fetching all users for admin panel
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        ok: true,
+        json: () => Promise.resolve([
+          { id: 'user1', name: 'Admin User', email: 'admin@example.com', role: 'admin', status: 'active' },
+          { id: 'user2', name: 'Regular User', email: 'user@example.com', role: 'user', status: 'active' },
+        ]),
+      });
+    }, 500);
+  });
+};
+
+export const promoteUserAdmin = async (userId: string) => {
+  console.log(`Admin: Promoting user ${userId}`);
+  return { ok: true }; // Simulate success
+};
+
+export const deactivateUserAdmin = async (userId: string) => {
+  console.log(`Admin: Deactivating user ${userId}`);
+  return { ok: true }; // Simulate success
+};
+
+export const deleteUserAdmin = async (userId: string) => {
+  console.log(`Admin: Deleting user ${userId}`);
+  return { ok: true }; // Simulate success
+};
+
+export const getSnippetsAdmin = async () => {
+  // Placeholder for fetching all snippets for admin panel
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        ok: true,
+        json: () => Promise.resolve([
+          { id: 'snip1', title: 'Admin Snippet 1', language: 'python', visibility: 'public' },
+          { id: 'snip2', title: 'Admin Snippet 2', language: 'javascript', visibility: 'private' },
+        ]),
+      });
+    }, 500);
+  });
+};
+
+export const deleteSnippetAdmin = async (snippetId: string) => {
+  console.log(`Admin: Deleting snippet ${snippetId}`);
+  return { ok: true }; // Simulate success
+};
+
+export const flagSnippetAdmin = async (snippetId: string) => {
+  console.log(`Admin: Flagging snippet ${snippetId}`);
+  return { ok: true }; // Simulate success
+};
+
+export const getExecutionsAdmin = async () => {
+  // Placeholder for fetching all executions for admin panel
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        ok: true,
+        json: () => Promise.resolve([
+          { id: 'exec1', snippet_id: 'snip1', status: 'success', runtime: 'python', duration: 120 },
+          { id: 'exec2', snippet_id: 'snip2', status: 'failed', runtime: 'javascript', duration: 200 },
+        ]),
+      });
+    }, 500);
+  });
+};
+
+export const rerunExecutionAdmin = async (executionId: string) => {
+  console.log(`Admin: Re-running execution ${executionId}`);
+  return { ok: true }; // Simulate success
+};
+
+export const killExecutionAdmin = async (executionId: string) => {
+  console.log(`Admin: Killing execution ${executionId}`);
+  return { ok: true }; // Simulate success
+};
+
+export const getSystemHealthMetrics = async () => {
+  // Placeholder for fetching system health metrics
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        ok: true,
+        json: () => Promise.resolve({
+          queue_depth: 5,
+          api_latency: '50ms',
+          db_replication_lag: '10s',
+        }),
+      });
+    }, 500);
+  });
+};
+
+// Execution API functions
+export const executeCode = async (language: string, code: string) => {
+  const response = await fetch(`${API_BASE_URL}/execute`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+    },
+    body: JSON.stringify({ language, code }),
+  });
+  return response;
+};
