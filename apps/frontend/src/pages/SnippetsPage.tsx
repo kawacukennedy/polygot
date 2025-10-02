@@ -79,17 +79,17 @@ const SnippetsPage = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-4">Snippets</h1>
+      <h1 className="text-3xl font-bold mb-4 text-[var(--color-text-primary)]">Snippets</h1>
       <div className="mb-4 flex space-x-4">
         <input 
           type="text" 
           placeholder="Search title..." 
-          className="p-2 border rounded-md w-1/3 bg-light-background dark:bg-dark-background" 
+          className="p-2 border rounded-md w-1/3 bg-[var(--color-background)] text-[var(--color-text-primary)] border-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]" 
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
         <select 
-          className="p-2 border rounded-md bg-light-background dark:bg-dark-background"
+          className="p-2 border rounded-md bg-[var(--color-background)] text-[var(--color-text-primary)] border-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
           value={languageFilter}
           onChange={e => setLanguageFilter(e.target.value)}
         >
@@ -104,7 +104,7 @@ const SnippetsPage = () => {
           <option value="ruby">Ruby</option>
         </select>
         <select 
-          className="p-2 border rounded-md bg-light-background dark:bg-dark-background"
+          className="p-2 border rounded-md bg-[var(--color-background)] text-[var(--color-text-primary)] border-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
           value={visibilityFilter}
           onChange={e => setVisibilityFilter(e.target.value)}
         >
@@ -114,35 +114,35 @@ const SnippetsPage = () => {
         </select>
       </div>
 
-      {loading && snippets.length === 0 && <p>Loading...</p>}
+      {loading && snippets.length === 0 && <p className="text-[var(--color-text-secondary)]">Loading...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
 
       {!loading && !error && snippets.length === 0 ? (
-        <div className="text-center py-8 text-light-text_secondary dark:text-dark-text_secondary">
+        <div className="text-center py-8 text-[var(--color-text-secondary)]">
           <span className="text-2xl">📄</span>
           <p>No snippets yet. Create one!</p>
         </div>
       ) : (
-        <div className="bg-light-background dark:bg-dark-background shadow-md rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+        <div className="bg-[var(--color-background)] shadow-md rounded-lg">
+          <table className="min-w-full divide-y divide-[var(--color-text-secondary)]/30">
+            <thead className="bg-[var(--color-background)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Language</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Visibility</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Created At</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Title</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Language</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Visibility</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Created At</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-[var(--color-text-secondary)]/20">
               {snippets.map(snippet => (
-                <tr key={snippet.id}>
+                <tr key={snippet.id} className="text-[var(--color-text-primary)]">
                   <td className="px-6 py-4 whitespace-nowrap">{snippet.title}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{snippet.language}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{snippet.visibility}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{new Date(snippet.created_at).toLocaleDateString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => handleEdit(snippet.id)} className="text-light-accent dark:text-dark-accent hover:underline mr-4">Edit</button>
+                    <button onClick={() => handleEdit(snippet.id)} className="text-[var(--color-accent)] hover:underline mr-4">Edit</button>
                     <button onClick={() => handleDelete(snippet.id)} className="text-red-500 hover:underline mr-4">Delete</button>
                     <Link to={`/snippets/run/${snippet.id}`} className="text-green-500 hover:underline">Run</Link>
                   </td>
@@ -150,8 +150,8 @@ const SnippetsPage = () => {
               ))}
             </tbody>
           </table>
-          {loading && <p className="text-center py-4">Loading more snippets...</p>}
-          {!hasMore && <p className="text-center py-4 text-light-text_secondary dark:text-dark-text_secondary">No more snippets to load.</p>}
+          {loading && <p className="text-center py-4 text-[var(--color-text-secondary)]">Loading more snippets...</p>}
+          {!hasMore && <p className="text-center py-4 text-[var(--color-text-secondary)]">No more snippets to load.</p>}
         </div>
       )}
     </div>

@@ -12,16 +12,10 @@ const pool = new Pool({
 
 export const getPopularLanguages = async (req: Request, res: Response) => {
   try {
-    // This is a placeholder. In a real application, you would query the database
-    // to get actual popular languages based on snippet creation or execution.
-    const popularLanguages = [
-      { language: 'python', count: 150 },
-      { language: 'javascript', count: 120 },
-      { language: 'java', count: 90 },
-      { language: 'cpp', count: 70 },
-      { language: 'go', count: 50 },
-    ];
-    res.json({ status: 'ok', data: popularLanguages });
+    const result = await pool.query(
+      'SELECT language, COUNT(*) as count FROM snippets GROUP BY language ORDER BY count DESC LIMIT 5'
+    );
+    res.json({ status: 'ok', data: result.rows });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });
@@ -31,15 +25,40 @@ export const getPopularLanguages = async (req: Request, res: Response) => {
 export const getTopUsers = async (req: Request, res: Response) => {
   const { language, period } = req.query;
 
+  let query = `
+    SELECT
+      u.id as user_id,
+      u.name as username,
+      COUNT(s.id) as snippets_shared,
+      SUM(CASE WHEN s.language = $1 THEN 1 ELSE 0 END) as language_snippets_shared,
+      (COUNT(s.id) * 10 + SUM(CASE WHEN s.language = $1 THEN 5 ELSE 0 END)) as score
+    FROM
+      users u
+    LEFT JOIN
+      snippets s ON u.id = s.author_id
+  `;
+  const queryParams: any[] = [];
+  let paramIndex = 1;
+
+  // Placeholder for language filter in scoring
+  queryParams.push(language || null); // Push a placeholder for the language parameter
+
+  if (language) {
+    query += ` WHERE s.language = $${paramIndex++}`;
+    queryParams.push(language);
+  }
+
+  query += `
+    GROUP BY
+      u.id, u.name
+    ORDER BY
+      score DESC
+    LIMIT 10
+  `;
+
   try {
-    // This is a placeholder. In a real application, you would query the database
-    // to get actual top users based on scores, snippets shared, etc.
-    const topUsers = [
-      { user_id: 'user1', username: 'Alice', score: 1500, language: 'python', snippets_shared: 25, rank: 1 },
-      { user_id: 'user2', username: 'Bob', score: 1450, language: 'javascript', snippets_shared: 30, rank: 2 },
-      { user_id: 'user3', username: 'Charlie', score: 1300, language: 'go', snippets_shared: 20, rank: 3 },
-    ];
-    res.json({ status: 'ok', data: topUsers });
+    const result = await pool.query(query, queryParams);
+    res.json({ status: 'ok', data: result.rows });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: 'error', message: 'Internal server error' });

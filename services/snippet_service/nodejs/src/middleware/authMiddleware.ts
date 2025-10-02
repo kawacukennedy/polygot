@@ -1,9 +1,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-
-// This is a temporary secret. In a real application, this should be in a config file.
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key';
+import config from '../config';
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -19,7 +17,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, config.jwt.access_token_secret) as { userId: string };
     (req as any).userId = decoded.userId;
     next();
   } catch (error) {

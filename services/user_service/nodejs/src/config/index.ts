@@ -16,4 +16,8 @@ export default {
     access_token_expiry: '15m',
     refresh_token_expiry: '7d',
   },
+  supabase: {
+    url: process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL',
+    anonKey: process.env.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY',
+  },
 };

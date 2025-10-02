@@ -1,9 +1,12 @@
 
 import { Router } from 'express';
+import { Server } from 'socket.io';
 import { executeCode } from '../controllers/executionController';
 
-const router = Router();
+export default (io: Server) => {
+  const router = Router();
 
-router.post('/', executeCode);
+  router.post('/', (req, res) => executeCode(req, res, io));
 
-export default router;
+  return router;
+};

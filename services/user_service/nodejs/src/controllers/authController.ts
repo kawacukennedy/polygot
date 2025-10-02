@@ -82,3 +82,23 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
+
+export const refreshToken = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ status: 'error', message: 'Refresh token not found' });
+  }
+
+  try {
+    const decoded: any = jwt.verify(refreshToken, config.jwt.refresh_token_secret);
+    const accessToken = jwt.sign({ userId: decoded.userId }, config.jwt.access_token_secret, { expiresIn: config.jwt.access_token_expiry });
+    const newRefreshToken = jwt.sign({ userId: decoded.userId }, config.jwt.refresh_token_secret, { expiresIn: config.jwt.refresh_token_expiry });
+
+    res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
+    res.json({ accessToken });
+  } catch (error) {
+    console.error(error);
+    res.status(403).json({ status: 'error', message: 'Invalid refresh token' });
+  }
+};

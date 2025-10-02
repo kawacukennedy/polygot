@@ -43,10 +43,10 @@ const LeaderboardPage = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-4">Leaderboard</h1>
+      <h1 className="text-3xl font-bold mb-4 text-[var(--color-text-primary)]">Leaderboard</h1>
       <div className="mb-4 flex space-x-4">
         <select 
-          className="p-2 border rounded-md bg-light-background dark:bg-dark-background"
+          className="p-2 border rounded-md bg-[var(--color-background)] text-[var(--color-text-primary)] border-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
           value={languageFilter}
           onChange={e => setLanguageFilter(e.target.value)}
         >
@@ -57,7 +57,7 @@ const LeaderboardPage = () => {
           <option value="Rust">Rust</option>
         </select>
         <select 
-          className="p-2 border rounded-md bg-light-background dark:bg-dark-background"
+          className="p-2 border rounded-md bg-[var(--color-background)] text-[var(--color-text-primary)] border-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
           value={timePeriodFilter}
           onChange={e => setTimePeriodFilter(e.target.value as 'daily' | 'weekly' | 'monthly')}
         >
@@ -67,24 +67,24 @@ const LeaderboardPage = () => {
         </select>
       </div>
 
-      {loading && <p>Loading...</p>}
+      {loading && <p className="text-[var(--color-text-secondary)]">Loading...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
 
       {!loading && !error && (
-        <div className="bg-light-background dark:bg-dark-background shadow-md rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+        <div className="bg-[var(--color-background)] shadow-md rounded-lg">
+          <table className="min-w-full divide-y divide-[var(--color-text-secondary)]/30">
+            <thead className="bg-[var(--color-background)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Rank</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Score</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Language</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Snippets Shared</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Rank</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">User</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Score</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Language</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Snippets Shared</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-[var(--color-text-secondary)]/20">
               {sortedLeaderboard.map((entry, index) => (
-                <tr key={entry.user_id}>
+                <tr key={entry.user_id} className="text-[var(--color-text-primary)]">
                   <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{entry.username}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{entry.score}</td>

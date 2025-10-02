@@ -9,7 +9,7 @@ interface SnippetEditorPageProps {
 const SnippetEditorPage: React.FC<SnippetEditorPageProps> = ({ showNotification }) => {
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-4">Create Snippet</h1>
+      <h1 className="text-3xl font-bold mb-4 text-[var(--color-text-primary)]">Create Snippet</h1>
       <SnippetEditor showNotification={showNotification} />
     </div>
   );

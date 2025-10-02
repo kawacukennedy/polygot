@@ -14,11 +14,13 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminSnippetsPage from './pages/AdminSnippetsPage';
 import AdminExecutionsPage from './pages/AdminExecutionsPage';
 import Notification from './components/Notification';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import './App.css';
 
-function App() {
+function AppContent() {
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const showNotification = useCallback((message: string, type: 'success' | 'error' | 'info') => {
     setNotification({ message, type });
@@ -34,7 +36,7 @@ function App() {
 
   return (
     <Router>
-      <div className="flex flex-col min-h-screen bg-light-background dark:bg-dark-background">
+      <div className="flex flex-col min-h-screen">
         <Header toggleMobileMenu={toggleMobileMenu} isMobileMenuOpen={isMobileMenuOpen} />
         <div className="flex flex-1">
           <Sidebar isMobileMenuOpen={isMobileMenuOpen} toggleMobileMenu={toggleMobileMenu} />
@@ -67,6 +69,14 @@ function App() {
         )}
       </div>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

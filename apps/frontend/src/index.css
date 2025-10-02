@@ -2,12 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-background: #FFFFFF;
+  --color-text-primary: #000000;
+  --color-text-secondary: #4B4B4B;
+  --color-accent: #6200EE;
+  --color-button-primary: #6200EE;
+  --color-button-secondary: #03DAC6;
+}
+
+.dark {
+  --color-background: #121212;
+  --color-text-primary: #E0E0E0;
+  --color-text-secondary: #B0B0B0;
+  --color-accent: #BB86FC;
+  --color-button-primary: #6200EE;
+  --color-button-secondary: #03DAC6;
+}
+
 @layer base {
   body {
-    @apply bg-light-background text-light-text_primary;
-  }
-  .dark body {
-    @apply bg-dark-background text-dark-text_primary;
+    @apply bg-[var(--color-background)] text-[var(--color-text-primary)];
   }
 }
 

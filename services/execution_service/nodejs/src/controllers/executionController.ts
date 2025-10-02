@@ -1,77 +1,79 @@
 
 import { Request, Response } from 'express';
-import { spawn } from 'child_process';
-import path from 'path';
-import fs from 'fs';
+import Redis from 'ioredis';
+import { v4 as uuidv4 } from 'uuid';
+import { Server } from 'socket.io';
 
-export const executeCode = async (req: Request, res: Response) => {
-  const { language, code, input, timeout_ms } = req.body;
+// Configure Redis client
+const redis = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: parseInt(process.env.REDIS_PORT || '6379', 10),
+});
 
-  if (!language || !code) {
-    return res.status(400).json({ status: 'error', message: 'Language and code are required' });
+// Create a separate Redis client for subscriptions
+const subscriber = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: parseInt(process.env.REDIS_PORT || '6379', 10),
+});
+
+export const executeCode = async (req: Request, res: Response, io: Server) => {
+  const { language, code, input, timeout_ms, socketId } = req.body;
+
+  if (!language || !code || !socketId) {
+    return res.status(400).json({ status: 'error', message: 'Language, code, and socketId are required' });
   }
 
-  const executionId = Date.now().toString();
-  const tempDir = path.join(__dirname, '..", 'temp', executionId);
-  const filename = `main.${language === 'python' ? 'py' : 'txt'}`;
-  const filepath = path.join(tempDir, filename);
+  const taskId = uuidv4();
+  const taskPayload = {
+    id: taskId,
+    task: 'worker.execute_code_task',
+    args: [language, code, input, timeout_ms],
+    kwargs: {},
+    retries: 0,
+    eta: null,
+    expires: null,
+    utc: true,
+    callbacks: null,
+    errbacks: null,
+    chord: null,
+    headers: {},
+    properties: {
+      correlation_id: taskId,
+      reply_to: 'celery',
+    },
+  };
 
   try {
-    await fs.promises.mkdir(tempDir, { recursive: true });
-    await fs.promises.writeFile(filepath, code);
+    // Publish task to Celery queue
+    await redis.lpush('celery', JSON.stringify(taskPayload));
 
-    let command: string;
-    let args: string[];
-
-    if (language === 'python') {
-      command = 'python';
-      args = [filepath];
-    } else {
-      return res.status(400).json({ status: 'error', message: `Unsupported language: ${language}` });
-    }
-
-    let stdout = '';
-    let stderr = '';
-    let timedOut = false;
-
-    const child = spawn(command, args, { cwd: tempDir });
-
-    const timer = setTimeout(() => {
-      timedOut = true;
-      child.kill();
-      res.status(408).json({ status: 'error', message: 'Execution timed out' });
-    }, timeout_ms || 5000);
-
-    child.stdin.write(input || '');
-    child.stdin.end();
-
-    child.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    child.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      if (timedOut) return;
-
-      if (code === 0) {
-        res.json({ status: 'success', stdout, stderr });
-      } else {
-        res.status(400).json({ status: 'error', message: 'Execution failed', stdout, stderr, exitCode: code });
+    // Subscribe to the result channel for this task
+    const resultChannel = `celery-task-meta-${taskId}`;
+    subscriber.subscribe(resultChannel, (err) => {
+      if (err) {
+        console.error(`Failed to subscribe to ${resultChannel}:`, err);
+        io.to(socketId).emit('executionError', { message: 'Failed to subscribe to execution results' });
+        return;
       }
-      fs.promises.rm(tempDir, { recursive: true, force: true });
+      console.log(`Subscribed to ${resultChannel}`);
     });
 
-    child.on('error', (err) => {
-      clearTimeout(timer);
-      if (timedOut) return;
-      console.error('Child process error:', err);
-      res.status(500).json({ status: 'error', message: 'Failed to execute code', error: err.message });
-      fs.promises.rm(tempDir, { recursive: true, force: true });
+    subscriber.on('message', (channel, message) => {
+      if (channel === resultChannel) {
+        const result = JSON.parse(message);
+        if (result.status === 'SUCCESS') {
+          io.to(socketId).emit('executionResult', { status: 'success', ...result.result });
+        } else if (result.status === 'FAILURE') {
+          io.to(socketId).emit('executionResult', { status: 'error', message: 'Execution failed', ...result.result });
+        } else {
+          io.to(socketId).emit('executionError', { message: 'Unknown worker status', rawResult: result });
+        }
+        subscriber.unsubscribe(resultChannel);
+        subscriber.removeAllListeners('message');
+      }
     });
+
+    res.json({ status: 'ok', message: 'Execution request sent to worker', taskId });
 
   } catch (error) {
     console.error(error);
