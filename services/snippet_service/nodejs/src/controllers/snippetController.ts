@@ -12,13 +12,13 @@ const pool = new Pool({
 });
 
 export const createSnippet = async (req: Request, res: Response) => {
-  const { title, language, code, visibility } = req.body;
+  const { title, language, code, visibility, tags } = req.body;
   const userId = (req as any).userId;
 
   try {
     const result = await pool.query(
-      'INSERT INTO snippets (title, language, code, visibility, author_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [title, language, code, visibility, userId]
+      'INSERT INTO snippets (title, language, code, visibility, author_id, tags) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [title, language, code, visibility, userId, tags]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -78,7 +78,7 @@ export const fetchUserSnippets = async (req: Request, res: Response) => {
 
 export const updateSnippet = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { title, code, visibility } = req.body;
+  const { title, code, visibility, tags } = req.body;
   const userId = (req as any).userId;
 
   try {
@@ -94,8 +94,8 @@ export const updateSnippet = async (req: Request, res: Response) => {
     }
 
     const result = await pool.query(
-      'UPDATE snippets SET title = $1, code = $2, visibility = $3 WHERE id = $4 RETURNING *',
-      [title, code, visibility, id]
+      'UPDATE snippets SET title = $1, code = $2, visibility = $3, tags = $4 WHERE id = $5 RETURNING *',
+      [title, code, visibility, tags, id]
     );
     res.json(result.rows[0]);
   } catch (error) {

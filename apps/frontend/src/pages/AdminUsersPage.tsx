@@ -54,7 +54,7 @@ const AdminUsersPage = () => {
   };
 
   if (loading) {
-    return <div>Loading users...</div>;
+    return <div className="text-[var(--color-text-secondary)]">Loading users...</div>;
   }
 
   if (error) {
@@ -63,31 +63,31 @@ const AdminUsersPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Admin User Management</h1>
-      <div className="bg-light-background dark:bg-dark-background shadow-md rounded-lg">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
+      <h1 className="text-3xl font-bold mb-4 text-[var(--color-text-primary)]">Admin User Management</h1>
+      <div className="bg-[var(--color-background)] shadow-md rounded-lg">
+        <table className="min-w-full divide-y divide-[var(--color-text-secondary)]/30">
+          <thead className="bg-[var(--color-background)]">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Role</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-[var(--color-text-secondary)]/20">
             {users.map(user => (
-              <tr key={user.id}>
+              <tr key={user.id} className="text-[var(--color-text-primary)]">
                 <td className="px-6 py-4 whitespace-nowrap">{user.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.status}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => handlePromote(user.id)} className="text-indigo-600 hover:text-indigo-900 mr-4">Promote</button>
-                  <button onClick={() => handleDeactivate(user.id)} className="text-yellow-600 hover:text-yellow-900 mr-4">Deactivate</button>
-                  <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                  <button onClick={() => handlePromote(user.id)} className="text-[var(--color-accent)] hover:underline mr-4">Promote</button>
+                  <button onClick={() => handleDeactivate(user.id)} className="text-yellow-600 hover:underline mr-4">Deactivate</button>
+                  <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:underline">Delete</button>
                 </td>
               </tr>
             ))}

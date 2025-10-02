@@ -57,7 +57,7 @@ const AdminSnippetsPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading snippets...</div>;
+    return <div className="flex justify-center items-center h-screen text-[var(--color-text-secondary)]">Loading snippets...</div>;
   }
 
   if (error) {
@@ -66,32 +66,32 @@ const AdminSnippetsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Admin Snippet Management</h1>
-      <div className="bg-light-background dark:bg-dark-background shadow-md rounded-lg p-6">
+      <h1 className="text-3xl font-bold mb-4 text-[var(--color-text-primary)]">Admin Snippet Management</h1>
+      <div className="bg-[var(--color-background)] shadow-md rounded-lg p-6">
         {snippets.length === 0 ? (
-          <p className="text-light-text_secondary dark:text-dark-text_secondary">No snippets found.</p>
+          <p className="text-[var(--color-text-secondary)]">No snippets found.</p>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+          <table className="min-w-full divide-y divide-[var(--color-text-secondary)]/30">
+            <thead className="bg-[var(--color-background)]">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">ID</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Title</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Language</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Visibility</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-light-text_secondary dark:text-dark-text_secondary uppercase tracking-wider">Created At</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">ID</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Title</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Language</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Visibility</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Created At</th>
                 <th scope="col" className="relative px-6 py-3">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-light-background dark:bg-dark-background divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-[var(--color-background)] divide-y divide-[var(--color-text-secondary)]/20">
               {snippets.map((snippet) => (
-                <tr key={snippet.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light-text_primary dark:text-dark-text_primary">{snippet.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text_primary dark:text-dark-text_primary">{snippet.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text_primary dark:text-dark-text_primary">{snippet.language}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text_primary dark:text-dark-text_primary">{snippet.visibility}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-light-text_primary dark:text-dark-text_primary">{new Date(snippet.created_at).toLocaleString()}</td>
+                <tr key={snippet.id} className="text-[var(--color-text-primary)]">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{snippet.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">{snippet.title}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">{snippet.language}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">{snippet.visibility}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(snippet.created_at).toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => handleDeleteSnippet(snippet.id)} className="text-red-600 hover:text-red-900 mr-4">Delete</button>
                     <button onClick={() => handleFlagSnippet(snippet.id)} className="text-yellow-600 hover:text-yellow-900">Flag</button>
@@ -106,15 +106,15 @@ const AdminSnippetsPage: React.FC = () => {
           <button
             onClick={() => setPage(prev => Math.max(1, prev - 1))}
             disabled={page === 1 || loading}
-            className="px-4 py-2 border rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-700 text-light-text_primary dark:text-dark-text_primary hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="px-4 py-2 border rounded-md text-sm font-medium bg-[var(--color-text-secondary)]/10 text-[var(--color-text-primary)] hover:bg-[var(--color-text-secondary)]/20"
           >
             Previous
           </button>
-          <span className="text-sm text-light-text_secondary dark:text-dark-text_secondary">Page {page}</span>
+          <span className="text-sm text-[var(--color-text-secondary)]">Page {page}</span>
           <button
             onClick={() => setPage(prev => prev + 1)}
             disabled={loading || snippets.length < perPage}
-            className="px-4 py-2 border rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-700 text-light-text_primary dark:text-dark-text_primary hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="px-4 py-2 border rounded-md text-sm font-medium bg-[var(--color-text-secondary)]/10 text-[var(--color-text-primary)] hover:bg-[var(--color-text-secondary)]/20"
           >
             Next
           </button>

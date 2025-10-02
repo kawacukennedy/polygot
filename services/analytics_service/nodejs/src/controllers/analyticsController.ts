@@ -40,12 +40,33 @@ export const getTopUsers = async (req: Request, res: Response) => {
   const queryParams: any[] = [];
   let paramIndex = 1;
 
-  // Placeholder for language filter in scoring
-  queryParams.push(language || null); // Push a placeholder for the language parameter
+  // Push a placeholder for the language parameter for scoring
+  queryParams.push(language || null);
+
+  const whereClauses: string[] = [];
 
   if (language) {
-    query += ` WHERE s.language = $${paramIndex++}`;
+    whereClauses.push(`s.language = $${paramIndex++}`);
     queryParams.push(language);
+  }
+
+  if (period) {
+    let dateFilter = '';
+    const now = new Date();
+    if (period === 'daily') {
+      dateFilter = `s.created_at >= NOW() - INTERVAL '1 day'`;
+    } else if (period === 'weekly') {
+      dateFilter = `s.created_at >= NOW() - INTERVAL '7 days'`;
+    } else if (period === 'monthly') {
+      dateFilter = `s.created_at >= NOW() - INTERVAL '1 month'`;
+    }
+    if (dateFilter) {
+      whereClauses.push(dateFilter);
+    }
+  }
+
+  if (whereClauses.length > 0) {
+    query += ` WHERE ${whereClauses.join(' AND ')}`;
   }
 
   query += `
