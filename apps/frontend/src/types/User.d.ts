@@ -4,4 +4,6 @@ export interface User {
   email: string;
   role: 'user' | 'admin'; // Assuming roles are 'user' or 'admin'
   status: 'active' | 'inactive' | 'pending'; // Assuming statuses
+  bio?: string;
+  avatar?: string;
 }

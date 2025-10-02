@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle }) => 
         <Toolbar />
         <List>
           {menuItems.map((text) => (
-            <ListItem button key={text}>
+            <ListItem button key={text} component="div">
               <ListItemText primary={text} />
             </ListItem>
           ))}
@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle }) => 
         <Toolbar />
         <List>
           {menuItems.map((text) => (
-            <ListItem button key={text}>
+            <ListItem button key={text} component="div">
               <ListItemText primary={text} />
             </ListItem>
           ))}

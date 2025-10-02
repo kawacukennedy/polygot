@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (username: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  setUser: (user: User | null) => void; // Add setUser to AuthContextType
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

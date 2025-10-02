@@ -252,7 +252,7 @@ const SnippetEditor: React.FC = () => {
             id="visibility-select"
             value={visibility}
             label="Visibility"
-            onChange={(e) => handleChange(setVisibility)(e.target.value as 'public' | 'private')}
+            onChange={(e) => setVisibility(e.target.value as 'public' | 'private')}
           >
             {visibilities.map((vis) => (
               <MenuItem key={vis} value={vis}>{vis}</MenuItem>
