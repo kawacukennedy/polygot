@@ -30,6 +30,9 @@ import AdminPanel from './pages/AdminPanel';
 import HomePage from './pages/Home';
 import SnippetsPage from './pages/SnippetsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import ExecutionsPage from './pages/ExecutionsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import SettingsPage from './pages/SettingsPage';
 
 // Import components
 import SnippetEditor from './components/SnippetEditor';
@@ -102,12 +105,17 @@ function App() {
         >
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/dashboard" element={<HomePage />} />
             <Route path="/snippets" element={<SnippetsPage />} />
-            <Route path="/snippets/new" element={<SnippetEditor />} />
-            <Route path="/snippets/edit/:id" element={<SnippetEditor />} />
+            <Route path="/my-snippets" element={<SnippetsPage />} />
+            <Route path="/snippets/new" element={<SnippetEditor mode={mode} />} />
+            <Route path="/snippets/edit/:id" element={<SnippetEditor mode={mode} />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/executions" element={<ExecutionsPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/login" element={<LoginPage />} />
           </Routes>

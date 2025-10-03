@@ -85,7 +85,7 @@ const LoginPage: React.FC = () => {
           <MuiLink component="button" variant="body2" onClick={() => navigate('/signup')}>
             {"Don't have an account? Sign Up"}
           </MuiLink>
-          <MuiLink component="button" variant="body2" sx={{ ml: 2 }}>
+          <MuiLink component="button" variant="body2" sx={{ ml: 2 }} onClick={() => showNotification('Forgot password functionality coming soon!', 'info')}>
             Forgot password?
           </MuiLink>
         </Box>

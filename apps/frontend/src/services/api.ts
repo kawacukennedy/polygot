@@ -23,8 +23,33 @@ export const signupUser = async (username: string, email: string, password: stri
 };
 
 // Snippet API functions
-export const getSnippets = async () => {
-  const response = await fetch(`${API_BASE_URL}/snippets`, {
+export const getSnippets = async (filters?: { language?: string; visibility?: string; searchTitle?: string; page?: number; pageSize?: number; userId?: string }) => {
+  const params = new URLSearchParams();
+  if (filters?.language) {
+    params.append('language', filters.language);
+  }
+  if (filters?.visibility) {
+    params.append('visibility', filters.visibility);
+  }
+  if (filters?.searchTitle) {
+    params.append('searchTitle', filters.searchTitle);
+  }
+  if (filters?.page) {
+    params.append('page', filters.page.toString());
+  }
+  if (filters?.pageSize) {
+    params.append('pageSize', filters.pageSize.toString());
+  }
+
+  let url = `${API_BASE_URL}/snippets`;
+  if (filters?.userId) {
+    url = `${API_BASE_URL}/users/${filters.userId}/snippets`;
+  }
+
+  const queryString = params.toString();
+  url = `${url}${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -81,8 +106,22 @@ export const deleteSnippet = async (id: string) => {
 };
 
 // Analytics API functions
-export const getTopUsers = async () => {
-  const response = await fetch(`${API_BASE_URL}/analytics/top-users`, {
+export const getTopUsers = async (filters?: { language?: string; timePeriod?: string; sortBy?: string }) => {
+  const params = new URLSearchParams();
+  if (filters?.language) {
+    params.append('language', filters.language);
+  }
+  if (filters?.timePeriod) {
+    params.append('timePeriod', filters.timePeriod);
+  }
+  if (filters?.sortBy) {
+    params.append('sortBy', filters.sortBy);
+  }
+
+  const queryString = params.toString();
+  const url = `${API_BASE_URL}/analytics/top-users${queryString ? `?${queryString}` : ''}`;
+
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

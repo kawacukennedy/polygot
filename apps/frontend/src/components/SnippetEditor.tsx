@@ -24,10 +24,14 @@ import Editor from '@monaco-editor/react';
 import { io } from 'socket.io-client';
 import { useNotification } from '../contexts/NotificationContext';
 
+interface SnippetEditorProps {
+  mode: 'light' | 'dark';
+}
+
 const languages = ['python', 'javascript', 'cpp', 'java', 'go', 'php', 'rust', 'ruby'];
 const visibilities = ['public', 'private'];
 
-const SnippetEditor: React.FC = () => {
+const SnippetEditor: React.FC<SnippetEditorProps> = ({ mode }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -266,7 +270,7 @@ const SnippetEditor: React.FC = () => {
             language={language}
             value={code}
             onChange={(value) => handleChange(setCode)(value || '')}
-            theme="vs-dark"
+            theme={mode === 'dark' ? 'vs-dark' : 'vs-light'}
             options={{
               minimap: { enabled: false },
               fontSize: 14,

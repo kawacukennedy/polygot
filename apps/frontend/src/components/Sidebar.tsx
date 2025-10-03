@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Drawer,
@@ -14,7 +15,13 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle }) => {
-  const menuItems = ['Dashboard', 'My Snippets', 'Executions', 'Analytics', 'Settings'];
+  const menuItems = [
+    { text: 'Dashboard', path: '/dashboard' },
+    { text: 'My Snippets', path: '/my-snippets' },
+    { text: 'Executions', path: '/executions' },
+    { text: 'Analytics', path: '/analytics' },
+    { text: 'Settings', path: '/settings' },
+  ];
 
   return (
     <Box
@@ -37,9 +44,9 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle }) => 
       >
         <Toolbar />
         <List>
-          {menuItems.map((text) => (
-            <ListItem button key={text} component="div">
-              <ListItemText primary={text} />
+          {menuItems.map((item) => (
+            <ListItem key={item.text} component={RouterLink} to={item.path}>
+              <ListItemText primary={item.text} />
             </ListItem>
           ))}
         </List>
@@ -56,9 +63,9 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle }) => 
       >
         <Toolbar />
         <List>
-          {menuItems.map((text) => (
-            <ListItem button key={text} component="div">
-              <ListItemText primary={text} />
+          {menuItems.map((item) => (
+            <ListItem key={item.text} component={RouterLink} to={item.path}>
+              <ListItemText primary={item.text} />
             </ListItem>
           ))}
         </List>

@@ -119,10 +119,11 @@ interface EditableFieldsProps {
   user: User | null;
   onFieldChange: (field: keyof User, value: string) => void;
   onSave: () => Promise<void>;
+  onCancel: () => void;
   loading: boolean;
 }
 
-const EditableFields: React.FC<EditableFieldsProps> = ({ user, onFieldChange, onSave, loading }) => {
+const EditableFields: React.FC<EditableFieldsProps> = ({ user, onFieldChange, onSave, onCancel, loading }) => {
   return (
     <Box sx={{ mb: 3 }}>
       <Typography variant="h6" gutterBottom>Profile Information</Typography>
@@ -150,7 +151,10 @@ const EditableFields: React.FC<EditableFieldsProps> = ({ user, onFieldChange, on
         value={user?.bio || ''}
         onChange={(e) => onFieldChange('bio', e.target.value)}
       />
-      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+        <Button variant="outlined" onClick={onCancel} disabled={loading}>
+          Cancel
+        </Button>
         <Button variant="contained" onClick={onSave} disabled={loading}>
           {loading ? <CircularProgress size={24} /> : 'Save Changes'}
         </Button>
@@ -243,7 +247,7 @@ const UserSnippets: React.FC<UserSnippetsProps> = ({ userId }) => {
     const fetchUserSnippets = async () => {
       setLoading(true);
       try {
-        const response = await getSnippets();
+        const response = await getSnippets({ userId: userId });
         if (response.ok) {
           const data = await response.json();
           setSnippets(data);
