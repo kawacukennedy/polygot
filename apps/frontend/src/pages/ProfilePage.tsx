@@ -8,6 +8,15 @@ const ProfilePage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: '',
+    form: '',
+  });
 
   useEffect(() => {
     // Fetch user profile data
@@ -21,6 +30,18 @@ const ProfilePage: React.FC = () => {
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Handle avatar upload logic
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Add validation logic here
+    if (newPassword !== confirmNewPassword) {
+      setPasswordErrors({ ...passwordErrors, confirmNewPassword: 'Passwords do not match' });
+      return;
+    }
+    // Add API call here
+    alert('Password changed successfully!');
+    setIsPasswordModalOpen(false);
   };
 
   if (loading) {
@@ -109,10 +130,69 @@ const ProfilePage: React.FC = () => {
         <Modal>
           <div className="p-6">
             <h2 className="text-xl font-bold mb-4">Change Password</h2>
-            {/* Change password form will be implemented here */}
-            <button onClick={() => setIsPasswordModalOpen(false)} className="mt-4 text-primary">
-              Close
-            </button>
+            <form onSubmit={handleChangePassword}>
+              <div className="mb-4">
+                <label
+                  htmlFor="currentPassword"
+                  className="block text-sm font-medium text-muted mb-1"
+                >
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  id="currentPassword"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="newPassword"
+                  className="block text-sm font-medium text-muted mb-1"
+                >
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="confirmNewPassword"
+                  className="block text-sm font-medium text-muted mb-1"
+                >
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmNewPassword"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+                />
+                {passwordErrors.confirmNewPassword && <p className="text-danger text-xs mt-1">{passwordErrors.confirmNewPassword}</p>}
+              </div>
+              <div className="flex justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  className="text-muted hover:underline"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover"
+                >
+                  Change Password
+                </button>
+              </div>
+            </form>
           </div>
         </Modal>
       )}
