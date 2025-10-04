@@ -12,6 +12,8 @@ import ProfilePage from './pages/ProfilePage';
 import AdminPanelPage from './pages/AdminPanelPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SettingsPage from './pages/SettingsPage';
+import WelcomePage from './pages/WelcomePage';
+import SearchPage from './pages/SearchPage'; // Import SearchPage
 
 // Import components
 import Header from './components/Header';
@@ -36,6 +38,8 @@ function App() {
             <Route path="/admin" element={<AdminPanelPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/welcome" element={<WelcomePage />} />
+            <Route path="/search" element={<SearchPage />} /> {/* Add route for SearchPage */}
             {/* Redirect to dashboard for root path */}
             <Route path="/" element={<DashboardPage />} />
           </Routes>
