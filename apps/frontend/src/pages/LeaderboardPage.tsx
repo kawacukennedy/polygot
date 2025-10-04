@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import { io } from 'socket.io-client';
+import { useToast } from '../contexts/ToastContext';
 
 interface LeaderboardEntry {
   rank: number;
@@ -9,33 +11,45 @@ interface LeaderboardEntry {
   language: string;
 }
 
-const dummyData: LeaderboardEntry[] = [
-  { rank: 1, avatar: 'https://i.pravatar.cc/40?u=1', user: 'user1', score: 1500, language: 'python' },
-  { rank: 2, avatar: 'https://i.pravatar.cc/40?u=2', user: 'user2', score: 1400, language: 'javascript' },
-  { rank: 3, avatar: 'https://i.pravatar.cc/40?u=3', user: 'user3', score: 1300, language: 'go' },
-  { rank: 4, avatar: 'https://i.pravatar.cc/40?u=4', user: 'user4', score: 1200, language: 'rust' },
-  { rank: 5, avatar: 'https://i.pravatar.cc/40?u=5', user: 'user5', score: 1100, language: 'python' },
-];
-
 const LeaderboardPage: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [languageFilter, setLanguageFilter] = useState('all');
   const [timeFilter, setTimeFilter] = useState('7d');
   const [searchQuery, setSearchQuery] = useState('');
+  const { addToast } = useToast();
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setLoading(true);
-      // In a real app, you would fetch data from an API
-      // For now, we'll just use the dummy data
-      setTimeout(() => {
-        setLeaderboard(dummyData);
+      try {
+        // In a real app, you would fetch data from an API
+        // For now, we'll just use the dummy data
+        const response = await fetch('/api/leaderboard'); // Assuming an API endpoint for initial fetch
+        if (response.ok) {
+          const data: LeaderboardEntry[] = await response.json();
+          setLeaderboard(data);
+        } else {
+          addToast('Failed to load leaderboard data.', 'error');
+        }
+      } catch (err) {
+        addToast('Network error while fetching leaderboard data.', 'error');
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     };
 
     fetchLeaderboard();
+
+    const socket = io('http://localhost:3001'); // Assuming WebSocket server runs on port 3001
+    socket.on('leaderboard_updates', (updatedLeaderboard: LeaderboardEntry[]) => {
+      setLeaderboard(updatedLeaderboard);
+      addToast('Leaderboard updated in real-time!', 'info');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [languageFilter, timeFilter]);
 
   const filteredLeaderboard = leaderboard.filter(entry =>
