@@ -19,6 +19,7 @@ const ProfilePage: React.FC = () => {
     form: '',
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -57,14 +58,61 @@ const ProfilePage: React.FC = () => {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add validation logic here
+    let valid = true;
+    const newErrors = {
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: '',
+      form: '',
+    };
+
+    if (!currentPassword) {
+      newErrors.currentPassword = 'Current password is required.';
+      valid = false;
+    }
+    if (newPassword.length < 8) {
+      newErrors.newPassword = 'Password must be at least 8 characters long.';
+      valid = false;
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])/.test(newPassword)) {
+      newErrors.newPassword = 'Password must include uppercase, lowercase, number and special character.';
+      valid = false;
+    }
     if (newPassword !== confirmNewPassword) {
-      setPasswordErrors({ ...passwordErrors, confirmNewPassword: 'Passwords do not match' });
+      newErrors.confirmNewPassword = 'Passwords do not match.';
+      valid = false;
+    }
+
+    setPasswordErrors(newErrors);
+
+    if (!valid) {
       return;
     }
-    // Add API call here
-    addToast('Password changed successfully!', 'success');
-    setIsPasswordModalOpen(false);
+
+    setIsChangingPassword(true);
+    try {
+      const response = await fetch('/api/profile/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      if (response.ok) {
+        addToast('Password changed successfully!', 'success');
+        setIsPasswordModalOpen(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+      } else {
+        const errorData = await response.json();
+        newErrors.form = errorData.message || 'Failed to change password.';
+        addToast(newErrors.form, 'error');
+      }
+    } catch (error) {
+      newErrors.form = 'Network error while changing password.';
+      addToast(newErrors.form, 'error');
+    } finally {
+      setIsChangingPassword(false);
+      setPasswordErrors(newErrors);
+    }
   };
 
   if (loading) {
@@ -157,6 +205,7 @@ const ProfilePage: React.FC = () => {
         <div className="p-6">
           <h2 className="text-xl font-bold mb-4">Change Password</h2>
           <form onSubmit={handleChangePassword}>
+            {passwordErrors.form && <p className="text-danger text-sm mb-4">{passwordErrors.form}</p>}
             <div className="mb-4">
               <label
                 htmlFor="currentPassword"
@@ -169,8 +218,9 @@ const ProfilePage: React.FC = () => {
                 id="currentPassword"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+                className={`w-full h-11 px-3 bg-white border rounded-md ${passwordErrors.currentPassword ? 'border-danger' : 'border-gray-300'}`}
               />
+              {passwordErrors.currentPassword && <p className="text-danger text-xs mt-1">{passwordErrors.currentPassword}</p>}
             </div>
             <div className="mb-4">
               <label
@@ -184,8 +234,9 @@ const ProfilePage: React.FC = () => {
                 id="newPassword"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+                className={`w-full h-11 px-3 bg-white border rounded-md ${passwordErrors.newPassword ? 'border-danger' : 'border-gray-300'}`}
               />
+              {passwordErrors.newPassword && <p className="text-danger text-xs mt-1">{passwordErrors.newPassword}</p>}
             </div>
             <div className="mb-4">
               <label
@@ -199,7 +250,7 @@ const ProfilePage: React.FC = () => {
                 id="confirmNewPassword"
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
-                className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+                className={`w-full h-11 px-3 bg-white border rounded-md ${passwordErrors.confirmNewPassword ? 'border-danger' : 'border-gray-300'}`}
               />
               {passwordErrors.confirmNewPassword && <p className="text-danger text-xs mt-1">{passwordErrors.confirmNewPassword}</p>}
             </div>
@@ -213,9 +264,10 @@ const ProfilePage: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover"
+                disabled={isChangingPassword}
+                className="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover disabled:bg-gray-400"
               >
-                Change Password
+                {isChangingPassword ? 'Changing...' : 'Change Password'}
               </button>
             </div>
           </form>
