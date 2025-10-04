@@ -13,7 +13,10 @@ import AdminPanelPage from './pages/AdminPanelPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SettingsPage from './pages/SettingsPage';
 import WelcomePage from './pages/WelcomePage';
-import SearchPage from './pages/SearchPage'; // Import SearchPage
+import SearchPage from './pages/SearchPage';
+import MySnippetsPage from './pages/MySnippetsPage';
+import ExecutionsPage from './pages/ExecutionsPage';
+import AnalyticsPage from './pages/AnalyticsPage'; // Import AnalyticsPage
 
 // Import components
 import Header from './components/Header';
@@ -39,7 +42,10 @@ function App() {
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/welcome" element={<WelcomePage />} />
-            <Route path="/search" element={<SearchPage />} /> {/* Add route for SearchPage */}
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/my-snippets" element={<MySnippetsPage />} />
+            <Route path="/executions" element={<ExecutionsPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} /> {/* Add route for AnalyticsPage */}
             {/* Redirect to dashboard for root path */}
             <Route path="/" element={<DashboardPage />} />
           </Routes>

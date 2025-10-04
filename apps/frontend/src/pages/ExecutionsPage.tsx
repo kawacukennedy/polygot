@@ -1,99 +1,91 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  CircularProgress,
-  Alert,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Paper,
-} from '@mui/material';
-import { getRecentExecutions } from '../services/api';
-import { RecentExecution } from '../types/Home';
-import { useNotification } from '../contexts/NotificationContext';
+import React, { useState, useEffect } from 'react';
+import LoadingSkeleton from '../components/LoadingSkeleton';
+import { useToast } from '../contexts/ToastContext';
+import { Link } from 'react-router-dom';
+
+interface Execution {
+  id: string;
+  snippetId: string;
+  language: string;
+  status: string;
+  executedAt: string;
+  output: string;
+}
 
 const ExecutionsPage: React.FC = () => {
-  const [executions, setExecutions] = useState<RecentExecution[]>([]);
+  const [executions, setExecutions] = useState<Execution[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { showNotification } = useNotification();
+  const [error, setError] = useState(false);
+  const { addToast } = useToast();
+
+  const fetchExecutions = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const response = await fetch('/api/executions');
+      if (response.ok) {
+        const data: Execution[] = await response.json();
+        setExecutions(data);
+      } else {
+        setError(true);
+        addToast('Failed to load executions.', 'error');
+      }
+    } catch (err) {
+      setError(true);
+      addToast('Network error while fetching executions.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchExecutions = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await getRecentExecutions(); // Default limit is 10
-        if (response.ok) {
-          const data = await response.json();
-          setExecutions(data);
-        } else {
-          const errorData = await response.json();
-          setError(errorData.message || 'Failed to fetch executions');
-          showNotification(errorData.message || 'Failed to fetch executions', 'error');
-        }
-      } catch (err) {
-        setError('Network error while fetching executions');
-        showNotification('Network error while fetching executions', 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchExecutions();
   }, []);
 
   if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" mt={4}>
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingSkeleton />;
   }
 
   if (error) {
     return (
-      <Alert severity="error">{error}</Alert>
+      <div className="text-center">
+        <p className="text-danger mb-4">Failed to load executions.</p>
+        <button
+          onClick={fetchExecutions}
+          className="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover"
+        >
+          Retry
+        </button>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Recent Executions
-      </Typography>
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Executions</h1>
       {executions.length === 0 ? (
-        <Typography variant="body1">No recent executions found.</Typography>
+        <p className="text-muted">No executions found.</p>
       ) : (
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="executions table">
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Snippet ID</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Language</TableCell>
-                <TableCell align="right">Duration (ms)</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {executions.map((exec) => (
-                <TableRow key={exec.id}>
-                  <TableCell>{exec.id}</TableCell>
-                  <TableCell>{exec.snippet_id}</TableCell>
-                  <TableCell>{exec.status}</TableCell>
-                  <TableCell>{exec.language}</TableCell>
-                  <TableCell align="right">{exec.duration_ms}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <div className="space-y-4">
+          {executions.map((execution) => (
+            <div key={execution.id} className="bg-surface rounded-lg p-4">
+              <div className="flex justify-between items-center mb-2">
+                <Link to={`/snippets/${execution.snippetId}`} className="text-xl font-bold text-primary hover:underline">
+                  Snippet ID: {execution.snippetId}
+                </Link>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${execution.status === 'success' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                  {execution.status}
+                </span>
+              </div>
+              <p className="text-muted text-sm mb-2">Language: {execution.language} - Executed At: {new Date(execution.executedAt).toLocaleString()}</p>
+              <pre className="bg-gray-800 text-white p-2 rounded-md text-sm overflow-auto max-h-24">
+                {execution.output || 'No output.'}
+              </pre>
+            </div>
+          ))}
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
