@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 
 const SignUpPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -15,6 +16,7 @@ const SignUpPage: React.FC = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const navigate = useNavigate();
   const { signup } = useAuth();
+  const { addToast } = useToast();
 
   useEffect(() => {
     const validateForm = async () => {
@@ -103,11 +105,11 @@ const SignUpPage: React.FC = () => {
         await signup(username, email, password);
         // Mock analytics event
         console.log('signup_success', { timestamp: new Date() });
-        // Mock toast notification
-        alert('Account created! Check your email to verify');
+        addToast('Account created! Check your email to verify', 'success');
         navigate('/welcome');
       } catch (error: any) {
         setErrors({ ...errors, form: error.message || 'An unexpected error occurred. Please try again.' });
+        addToast(error.message || 'An unexpected error occurred. Please try again.', 'error');
       }
     }
   };

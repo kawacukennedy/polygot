@@ -1,9 +1,51 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-const Toast: React.FC = () => {
+export type ToastType = 'success' | 'error' | 'info';
+
+export interface ToastProps {
+  id: string;
+  message: string;
+  type: ToastType;
+  onClose: (id: string) => void;
+}
+
+const toastConfig = {
+  success: {
+    bg: 'bg-success',
+    icon: '✅',
+  },
+  error: {
+    bg: 'bg-danger',
+    icon: '❌',
+  },
+  info: {
+    bg: 'bg-primary',
+    icon: 'ℹ️',
+  },
+};
+
+const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose(id);
+    }, 5000); // Auto-close after 5 seconds
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [id, onClose]);
+
+  const { bg, icon } = toastConfig[type];
+
   return (
-    <div>
-      <p>Toast Message</p>
+    <div
+      className={`w-96 p-3 rounded-md shadow-lg flex items-center text-white ${bg}`}
+    >
+      <span className="mr-3 text-xl">{icon}</span>
+      <p>{message}</p>
+      <button onClick={() => onClose(id)} className="ml-auto text-white">
+        &times;
+      </button>
     </div>
   );
 };

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } => 'react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import Modal from '../components/Modal'; // Assuming a generic Modal component exists
+import Modal from '../components/Modal';
 
 const ProfilePage: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
@@ -126,76 +126,74 @@ const ProfilePage: React.FC = () => {
         </button>
       </div>
 
-      {isPasswordModalOpen && (
-        <Modal>
-          <div className="p-6">
-            <h2 className="text-xl font-bold mb-4">Change Password</h2>
-            <form onSubmit={handleChangePassword}>
-              <div className="mb-4">
-                <label
-                  htmlFor="currentPassword"
-                  className="block text-sm font-medium text-muted mb-1"
-                >
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  id="currentPassword"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="newPassword"
-                  className="block text-sm font-medium text-muted mb-1"
-                >
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="confirmNewPassword"
-                  className="block text-sm font-medium text-muted mb-1"
-                >
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  id="confirmNewPassword"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
-                />
-                {passwordErrors.confirmNewPassword && <p className="text-danger text-xs mt-1">{passwordErrors.confirmNewPassword}</p>}
-              </div>
-              <div className="flex justify-end gap-4">
-                <button
-                  type="button"
-                  onClick={() => setIsPasswordModalOpen(false)}
-                  className="text-muted hover:underline"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover"
-                >
-                  Change Password
-                </button>
-              </div>
-            </form>
-          </div>
-        </Modal>
-      )}
+      <Modal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)}>
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-4">Change Password</h2>
+          <form onSubmit={handleChangePassword}>
+            <div className="mb-4">
+              <label
+                htmlFor="currentPassword"
+                className="block text-sm font-medium text-muted mb-1"
+              >
+                Current Password
+              </label>
+              <input
+                type="password"
+                id="currentPassword"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="newPassword"
+                className="block text-sm font-medium text-muted mb-1"
+              >
+                New Password
+              </label>
+              <input
+                type="password"
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="confirmNewPassword"
+                className="block text-sm font-medium text-muted mb-1"
+              >
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                id="confirmNewPassword"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md"
+              />
+              {passwordErrors.confirmNewPassword && <p className="text-danger text-xs mt-1">{passwordErrors.confirmNewPassword}</p>}
+            </div>
+            <div className="flex justify-end gap-4">
+              <button
+                type="button"
+                onClick={() => setIsPasswordModalOpen(false)}
+                className="text-muted hover:underline"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover"
+              >
+                Change Password
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
     </div>
   );
 };

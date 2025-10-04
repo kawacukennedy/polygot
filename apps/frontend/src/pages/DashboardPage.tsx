@@ -1,41 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import { useToast } from '../contexts/ToastContext';
 
-// Placeholder components for the dashboard sections
-const RecentSnippets: React.FC = () => (
+interface SnippetSummary {
+  id: string;
+  title: string;
+  language: string;
+}
+
+interface LeaderboardEntry {
+  id: string;
+  user: string;
+  score: number;
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  unlocked: boolean;
+}
+
+interface DashboardSummary {
+  recent_snippets: SnippetSummary[];
+  leaderboard_preview: LeaderboardEntry[];
+  achievements_panel: Achievement[];
+}
+
+const RecentSnippets: React.FC<{ snippets: SnippetSummary[] }> = ({ snippets }) => (
   <div className="bg-surface rounded-lg p-6 min-h-[220px]">
     <h2 className="text-xl font-bold mb-4">Recent Snippets</h2>
     <ul>
-      <li className="h-16 mb-2">Snippet 1</li>
-      <li className="h-16 mb-2">Snippet 2</li>
-      <li className="h-16 mb-2">Snippet 3</li>
+      {snippets.map(snippet => (
+        <li key={snippet.id} className="mb-2">
+          <a href={`/snippets/${snippet.id}`} className="text-primary hover:underline">
+            {snippet.title} ({snippet.language})
+          </a>
+        </li>
+      ))}
     </ul>
   </div>
 );
 
-const LeaderboardPreview: React.FC = () => (
+const LeaderboardPreview: React.FC<{ entries: LeaderboardEntry[] }> = ({ entries }) => (
   <div className="bg-surface rounded-lg p-6 min-h-[220px]">
     <h2 className="text-xl font-bold mb-4">Leaderboard</h2>
     <ul>
-      <li className="h-12 mb-2">User 1</li>
-      <li className="h-12 mb-2">User 2</li>
-      <li className="h-12 mb-2">User 3</li>
-      <li className="h-12 mb-2">User 4</li>
-      <li className="h-12 mb-2">User 5</li>
+      {entries.map(entry => (
+        <li key={entry.id} className="mb-2">
+          {entry.user}: {entry.score}
+        </li>
+      ))}
     </ul>
   </div>
 );
 
-const AchievementsPanel: React.FC = () => (
+const AchievementsPanel: React.FC<{ achievements: Achievement[] }> = ({ achievements }) => (
   <div className="bg-surface rounded-lg p-6 min-h-[220px]">
     <h2 className="text-xl font-bold mb-4">Achievements</h2>
     <div className="grid grid-cols-3 gap-4">
-      <div className="h-20 bg-gray-200 rounded-md"></div>
-      <div className="h-20 bg-gray-200 rounded-md"></div>
-      <div className="h-20 bg-gray-200 rounded-md"></div>
-      <div className="h-20 bg-gray-200 rounded-md"></div>
-      <div className="h-20 bg-gray-200 rounded-md"></div>
-      <div className="h-20 bg-gray-200 rounded-md"></div>
+      {achievements.map(achievement => (
+        <div
+          key={achievement.id}
+          className={`h-20 rounded-md flex items-center justify-center ${achievement.unlocked ? 'bg-success text-white' : 'bg-gray-200 text-gray-500'}`}
+        >
+          {achievement.name}
+        </div>
+      ))}
     </div>
   </div>
 );
@@ -44,22 +74,30 @@ const AchievementsPanel: React.FC = () => (
 const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [dashboardData, setDashboardData] = useState<DashboardSummary | null>(null);
+  const { addToast } = useToast();
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const response = await fetch('/api/dashboard/summary');
+      if (response.ok) {
+        const data: DashboardSummary = await response.json();
+        setDashboardData(data);
+      } else {
+        setError(true);
+        addToast('Failed to load dashboard data.', 'error');
+      }
+    } catch (err) {
+      setError(true);
+      addToast('Network error while fetching dashboard data.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // const response = await fetch('/dashboard/summary');
-        // const data = await response.json();
-        // For now, we'll just simulate a successful fetch
-        setTimeout(() => {
-          setLoading(false);
-        }, 1500);
-      } catch (err) {
-        setError(true);
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -73,12 +111,12 @@ const DashboardPage: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error || !dashboardData) {
     return (
       <div className="text-center">
         <p className="text-danger mb-4">Failed to load dashboard data.</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={fetchData}
           className="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover"
         >
           Retry
@@ -89,9 +127,9 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      <RecentSnippets />
-      <LeaderboardPreview />
-      <AchievementsPanel />
+      <RecentSnippets snippets={dashboardData.recent_snippets} />
+      <LeaderboardPreview entries={dashboardData.leaderboard_preview} />
+      <AchievementsPanel achievements={dashboardData.achievements_panel} />
     </div>
   );
 };
