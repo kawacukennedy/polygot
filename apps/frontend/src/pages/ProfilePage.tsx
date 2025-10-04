@@ -1,6 +1,7 @@
-import React, { useState, useEffect } => 'react';
+import React, { useState, useEffect } from 'react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import Modal from '../components/Modal';
+import { useToast } from '../contexts/ToastContext';
 
 const ProfilePage: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
@@ -17,6 +18,8 @@ const ProfilePage: React.FC = () => {
     confirmNewPassword: '',
     form: '',
   });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const { addToast } = useToast();
 
   useEffect(() => {
     // Fetch user profile data
@@ -32,6 +35,26 @@ const ProfilePage: React.FC = () => {
     // Handle avatar upload logic
   };
 
+  const handleSaveChanges = async () => {
+    setIsSavingProfile(true);
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName, bio }),
+      });
+      if (response.ok) {
+        addToast('Profile updated successfully!', 'success');
+      } else {
+        addToast('Failed to update profile.', 'error');
+      }
+    } catch (error) {
+      addToast('Network error while saving profile.', 'error');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     // Add validation logic here
@@ -40,7 +63,7 @@ const ProfilePage: React.FC = () => {
       return;
     }
     // Add API call here
-    alert('Password changed successfully!');
+    addToast('Password changed successfully!', 'success');
     setIsPasswordModalOpen(false);
   };
 
@@ -121,8 +144,12 @@ const ProfilePage: React.FC = () => {
         </div>
       </div>
       <div className="mt-6 text-right">
-        <button className="bg-success text-white font-bold py-2 px-4 rounded-md hover:bg-green-700">
-          Save Changes
+        <button
+          onClick={handleSaveChanges}
+          disabled={isSavingProfile}
+          className="bg-success text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400"
+        >
+          {isSavingProfile ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
 
