@@ -6,8 +6,8 @@ import { loginUser, signupUser } from '../services/api'; // Import API functions
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (username: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void; // Add setUser to AuthContextType
 }
@@ -19,60 +19,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check for existing tokens/user on initial load
     const accessToken = Cookies.get('accessToken');
     if (accessToken) {
-      // In a real app, you'd validate the token with the backend
-      // For now, we'll just assume it's valid and set a dummy user
       setUser({ id: '1', name: 'Authenticated User', email: 'user@example.com', role: 'user', status: 'active' });
       setIsAuthenticated(true);
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<void> => {
     try {
       const response = await loginUser(email, password);
 
       if (response.ok) {
         const data = await response.json();
-        // Assuming backend sets httpOnly cookies, so no need to manually set them here
-        // If backend returns user data, set it
         setUser(data.user || { id: '1', name: 'Logged In User', email: email, role: 'user', status: 'active' });
         setIsAuthenticated(true);
-        return true;
       } else {
         const errorData = await response.json();
-        console.error('Login failed:', errorData.message);
-        return false;
+        throw new Error(errorData.message || 'Login failed');
       }
     } catch (error) {
-      console.error('Network error during login:', error);
-      return false;
+      throw error;
     }
   };
 
-  const signup = async (username: string, email: string, password: string): Promise<boolean> => {
+  const signup = async (username: string, email: string, password: string): Promise<void> => {
     try {
       const response = await signupUser(username, email, password);
 
-      if (response.ok) {
-        // Assuming backend handles email verification and doesn't return tokens immediately
-        return true;
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
-        console.error('Signup failed:', errorData.message);
-        return false;
+        throw new Error(errorData.message || 'Signup failed');
       }
     } catch (error) {
-      console.error('Network error during signup:', error);
-      return false;
+      throw error;
     }
   };
 
   const logout = () => {
-    // Invalidate tokens on the backend if necessary
-    Cookies.remove('accessToken'); // Remove client-side cookie if any
-    Cookies.remove('refreshToken'); // Remove client-side cookie if any
+    Cookies.remove('accessToken');
+    Cookies.remove('refreshToken');
     setUser(null);
     setIsAuthenticated(false);
   };
