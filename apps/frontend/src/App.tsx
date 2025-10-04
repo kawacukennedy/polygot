@@ -1,129 +1,47 @@
-import React, { useState, useMemo } from 'react';
-import { Routes, Route, Link as RouterLink, useNavigate } from 'react-router-dom';
-import {
-  CssBaseline,
-  ThemeProvider,
-  createTheme,
-  Box,
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  Switch,
-  FormControlLabel,
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import AddIcon from '@mui/icons-material/Add';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 
-// Import new pages
-import SignupPage from './pages/Signup';
+// Import pages
+import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
-import ProfilePage from './pages/ProfilePage';
-import AdminPanel from './pages/AdminPanel';
-import HomePage from './pages/Home';
-import SnippetsPage from './pages/SnippetsPage';
+import DashboardPage from './pages/DashboardPage';
+import SnippetEditorPage from './pages/SnippetEditorPage';
+import SnippetViewPage from './pages/SnippetViewPage';
 import LeaderboardPage from './pages/LeaderboardPage';
-import ExecutionsPage from './pages/ExecutionsPage';
-import AnalyticsPage from './pages/AnalyticsPage';
+import ProfilePage from './pages/ProfilePage';
+import AdminPanelPage from './pages/AdminPanelPage';
+import NotificationsPage from './pages/NotificationsPage';
 import SettingsPage from './pages/SettingsPage';
 
 // Import components
-import SnippetEditor from './components/SnippetEditor';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
-import Footer from './components/Footer';
-
-// Import AuthContext
-import { useAuth } from './contexts/AuthContext';
 
 function App() {
-  const [mode, setMode] = useState<'light' | 'dark'>('light');
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const toggleTheme = () => {
-    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-  };
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const theme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-          ...(mode === 'light'
-            ? {
-                primary: { main: '#6200EE' },
-                secondary: { main: '#03DAC6' },
-                background: { default: '#FFFFFF', paper: '#FFFFFF' },
-                text: { primary: '#000000', secondary: '#4B4B4B' },
-              }
-            : {
-                primary: { main: '#BB86FC' },
-                secondary: { main: '#03DAC6' },
-                background: { default: '#121212', paper: '#121212' },
-                text: { primary: '#E0E0E0', secondary: '#B0B0B0' },
-              }),
-        },
-        transitions: {
-          // Define custom transitions for theme changes
-          create: (props, options) => {
-            return createTheme().transitions.create(props, {
-              duration: 300, // 300ms
-              easing: 'ease-in-out',
-              ...options,
-            });
-          },
-        },
-      }),
-    [mode],
-  );
-
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Header toggleTheme={toggleTheme} mode={mode} handleDrawerToggle={handleDrawerToggle} />
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            width: { sm: `calc(100% - 240px)` },
-            ml: { sm: `240px` },
-            mt: '64px', // AppBar height
-          }}
-        >
+    <div className="bg-bg min-h-screen flex flex-col">
+      <Header />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1 p-6">
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/dashboard" element={<HomePage />} />
-            <Route path="/snippets" element={<SnippetsPage />} />
-            <Route path="/my-snippets" element={<SnippetsPage />} />
-            <Route path="/snippets/new" element={<SnippetEditor mode={mode} />} />
-            <Route path="/snippets/edit/:id" element={<SnippetEditor mode={mode} />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/snippets/new" element={<SnippetEditorPage />} />
+            <Route path="/snippets/:id/edit" element={<SnippetEditorPage />} />
+            <Route path="/snippets/:id" element={<SnippetViewPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/executions" element={<ExecutionsPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/admin" element={<AdminPanelPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/login" element={<LoginPage />} />
+            {/* Redirect to dashboard for root path */}
+            <Route path="/" element={<DashboardPage />} />
           </Routes>
-        </Box>
-        <Sidebar mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
-        <Footer />
-      </Box>
-    </ThemeProvider>
+        </main>
+      </div>
+    </div>
   );
 }
 

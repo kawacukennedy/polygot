@@ -27,6 +27,7 @@ import { Snippet } from '../types/Snippet';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
+import { io } from 'socket.io-client';
 
 const SnippetsList: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -43,6 +44,43 @@ const SnippetsList: React.FC = () => {
   const { showNotification } = useNotification();
 
   const SNIPPETS_PER_PAGE = 20; // Defined in app_spec
+
+  const socketRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      socketRef.current = io('http://localhost:3003'); // Assuming execution service WebSocket URL
+
+      socketRef.current.on('connect', () => {
+        console.log('Connected to WebSocket for snippets');
+      });
+
+      socketRef.current.on('snippet_created', (newSnippet: Snippet) => {
+        showNotification(`New snippet created: ${newSnippet.title}`, 'info');
+        setSnippets((prev) => [newSnippet, ...prev]);
+      });
+
+      socketRef.current.on('snippet_updated', (updatedSnippet: Snippet) => {
+        showNotification(`Snippet updated: ${updatedSnippet.title}`, 'info');
+        setSnippets((prev) =>
+          prev.map((s) => (s.id === updatedSnippet.id ? updatedSnippet : s))
+        );
+      });
+
+      socketRef.current.on('snippet_deleted', (deletedSnippetId: string) => {
+        showNotification(`Snippet deleted: ${deletedSnippetId}`, 'info');
+        setSnippets((prev) => prev.filter((s) => s.id !== deletedSnippetId));
+      });
+
+      socketRef.current.on('disconnect', () => {
+        console.log('Disconnected from WebSocket for snippets');
+      });
+
+      return () => {
+        socketRef.current?.disconnect();
+      };
+    }
+  }, [isAuthenticated, showNotification]);
 
   const observer = useRef<IntersectionObserver>();
   const lastSnippetElementRef = useCallback((node: HTMLTableRowElement) => {
@@ -114,7 +152,7 @@ const SnippetsList: React.FC = () => {
       try {
         const response = await deleteSnippet(id);
         if (response.ok) {
-          fetchSnippets({ language: languageFilter, visibility: visibilityFilter, searchTitle: searchTitleFilter }, 1); // Refresh the list
+          // No need to refetch, WebSocket will handle update
           showNotification('Snippet deleted successfully!', 'success');
         } else {
           const errorData = await response.json();
@@ -126,7 +164,7 @@ const SnippetsList: React.FC = () => {
         showNotification('Network error while deleting snippet', 'error');
       }
     }
-  }, [fetchSnippets, showNotification, languageFilter, visibilityFilter, searchTitleFilter]);
+  }, [showNotification]);
 
   const handleEdit = useCallback((id: string) => {
     navigate(`/snippets/edit/${id}`);

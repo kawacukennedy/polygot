@@ -20,6 +20,7 @@ import { getTopUsers } from '../services/api';
 import { LeaderboardEntry } from '../types/Leaderboard';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { io } from 'socket.io-client';
 
 const LeaderboardTable: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -30,6 +31,31 @@ const LeaderboardTable: React.FC = () => {
   const [timePeriodFilter, setTimePeriodFilter] = useState<string>('7d'); // Default to 7 days
   const [sortBy, setSortBy] = useState<string>('score_desc'); // Default sorting
   const { showNotification } = useNotification();
+
+  const socketRef = React.useRef<any>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      socketRef.current = io('http://localhost:3003'); // Assuming execution service WebSocket URL
+
+      socketRef.current.on('connect', () => {
+        console.log('Connected to WebSocket for leaderboard');
+      });
+
+      socketRef.current.on('leaderboard_updated', () => {
+        showNotification('Leaderboard updated in real-time!', 'info');
+        fetchLeaderboard({ language: languageFilter, timePeriod: timePeriodFilter, sortBy: sortBy });
+      });
+
+      socketRef.current.on('disconnect', () => {
+        console.log('Disconnected from WebSocket for leaderboard');
+      });
+
+      return () => {
+        socketRef.current?.disconnect();
+      };
+    }
+  }, [isAuthenticated, showNotification, languageFilter, timePeriodFilter, sortBy]);
 
   const fetchLeaderboard = async (filters: { language?: string; timePeriod?: string; sortBy?: string }) => {
     setLoading(true);
@@ -63,7 +89,7 @@ const LeaderboardTable: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchLeaderboard({ language: languageFilter, timePeriod: timePeriodFilter, sortBy: sortBy });
+      // fetchLeaderboard({ language: languageFilter, timePeriod: timePeriodFilter, sortBy: sortBy });
     }
   }, [isAuthenticated, languageFilter, timePeriodFilter, sortBy]);
 
