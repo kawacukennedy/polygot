@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
 
 interface Settings {
@@ -11,6 +12,7 @@ const SettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { addToast } = useToast();
 
   const fetchSettings = async () => {
@@ -83,11 +85,12 @@ const SettingsPage: React.FC = () => {
           <div className="bg-surface rounded-lg p-6">
             <div className="flex items-center gap-4">
               <label>Theme:</label>
-              <select
-                value={settings.theme}
-                onChange={(e) => handleThemeChange(e.target.value as 'light' | 'dark' | 'system')}
-                className="h-11 px-3 bg-white border border-gray-300 rounded-md"
-              >
+               <select
+                 value={settings.theme}
+                 onChange={(e) => handleThemeChange(e.target.value as 'light' | 'dark' | 'system')}
+                 className="h-11 px-3 bg-white border border-gray-300 rounded-md"
+                 tabIndex={1}
+               >
                 <option value="light">Light</option>
                 <option value="dark">Dark</option>
                 <option value="system">System</option>
@@ -99,7 +102,7 @@ const SettingsPage: React.FC = () => {
           <h2 className="text-xl font-bold mb-4">Account</h2>
           <div className="bg-surface rounded-lg p-6">
             <p>Account settings will be here.</p>
-            <button className="mt-4 text-danger hover:underline">Delete Account</button>
+             <button onClick={() => setShowDeleteModal(true)} className="mt-4 text-danger hover:underline">Delete Account</button>
           </div>
         </section>
         <section>
@@ -109,6 +112,17 @@ const SettingsPage: React.FC = () => {
           </div>
         </section>
       </div>
+
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-4">Delete Account</h2>
+          <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+          <div className="flex justify-end mt-4">
+            <button onClick={() => setShowDeleteModal(false)} className="mr-2 px-4 py-2 bg-gray-300 rounded">Cancel</button>
+            <button onClick={() => { /* delete account */ addToast('Account deleted', 'success'); setShowDeleteModal(false); }} className="px-4 py-2 bg-danger text-white rounded">Delete</button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

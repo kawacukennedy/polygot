@@ -1,25 +1,18 @@
-const API_BASE_URL = 'http://localhost:3001/api/v1'; // Base URL for your backend API
+import { apiCall } from './apiClient';
 
+// Authentication API functions
 export const loginUser = async (email: string, password: string) => {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  return apiCall('/auth/login', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ email, password }),
   });
-  return response;
 };
 
 export const signupUser = async (username: string, email: string, password: string) => {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+  return apiCall('/auth/register', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({ username, email, password }),
   });
-  return response;
 };
 
 // Snippet API functions
@@ -41,68 +34,43 @@ export const getSnippets = async (filters?: { language?: string; visibility?: st
     params.append('pageSize', filters.pageSize.toString());
   }
 
-  let url = `${API_BASE_URL}/snippets`;
+  let url = '/snippets';
   if (filters?.userId) {
-    url = `${API_BASE_URL}/users/${filters.userId}/snippets`;
+    url = `/users/${filters.userId}/snippets`;
   }
 
   const queryString = params.toString();
   url = `${url}${queryString ? `?${queryString}` : ''}`;
 
-  const response = await fetch(url, {
+  return apiCall(url, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
   });
-  return response;
 };
 
 export const createSnippet = async (title: string, language: string, code: string, visibility: 'public' | 'private') => {
-  const response = await fetch(`${API_BASE_URL}/snippets`, {
+  return apiCall('/snippets', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
     body: JSON.stringify({ title, language, code, visibility }),
   });
-  return response;
 };
 
 export const getSnippetById = async (id: string) => {
-  const response = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+  return apiCall(`/snippets/${id}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
   });
-  return response;
 };
 
 export const updateSnippet = async (id: string, title: string, language: string, code: string, visibility: 'public' | 'private') => {
-  const response = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+  return apiCall(`/snippets/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
     body: JSON.stringify({ title, language, code, visibility }),
   });
-  return response;
 };
 
 export const deleteSnippet = async (id: string) => {
-  const response = await fetch(`${API_BASE_URL}/snippets/${id}`, {
+  return apiCall(`/snippets/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
   });
-  return response;
 };
 
 // Analytics API functions
@@ -119,78 +87,52 @@ export const getTopUsers = async (filters?: { language?: string; timePeriod?: st
   }
 
   const queryString = params.toString();
-  const url = `${API_BASE_URL}/analytics/top-users${queryString ? `?${queryString}` : ''}`;
+  const url = `/analytics/top-users${queryString ? `?${queryString}` : ''}`;
 
-  const response = await fetch(url, {
+  return apiCall(url, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
   });
-  return response;
 };
 
 export const getPopularLanguages = async () => {
-  const response = await fetch(`${API_BASE_URL}/analytics/popular-languages`, {
+  return apiCall('/analytics/popular-languages', {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
   });
-  return response;
 };
 
 export const getRecentExecutions = async (limit: number = 10) => {
-  const response = await fetch(`${API_BASE_URL}/execute/recent?limit=${limit}`, {
+  return apiCall(`/execute/recent?limit=${limit}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
   });
-  return response;
 };
 
 
 // User Profile API functions
 export const updateUserProfile = async (userId: string, name: string, email: string, bio: string) => {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+  return apiCall(`/users/${userId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
     body: JSON.stringify({ name, email, bio }),
   });
-  return response;
 };
 
 export const changeUserPassword = async (userId: string, currentPassword: string, newPassword: string) => {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}/password`, {
+  return apiCall(`/users/${userId}/password`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
     body: JSON.stringify({ currentPassword, newPassword }),
   });
-  return response;
 };
 
 export const uploadAvatar = async (userId: string, file: File) => {
   const formData = new FormData();
   formData.append('avatar', file);
 
-  const response = await fetch(`${API_BASE_URL}/users/${userId}/avatar`, {
+  return apiCall(`/users/${userId}/avatar`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
+      'Content-Type': 'multipart/form-data', // Set content type for FormData
     },
     body: formData,
   });
-  return response;
 };
 
 // Admin API functions (Placeholders)
@@ -292,13 +234,8 @@ export const getSystemHealthMetrics = async () => {
 
 // Execution API functions
 export const executeCode = async (language: string, code: string) => {
-  const response = await fetch(`${API_BASE_URL}/execute`, {
+  return apiCall('/execute', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`, // Assuming token is stored in localStorage
-    },
     body: JSON.stringify({ language, code }),
   });
-  return response;
 };

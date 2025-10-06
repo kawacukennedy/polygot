@@ -80,19 +80,23 @@ const NotificationsPage: React.FC = () => {
         <button
           onClick={markAllAsRead}
           className="text-primary hover:underline"
+          tabIndex={1}
         >
           Mark all as read
         </button>
       </div>
-      <div className="bg-surface rounded-lg">
-        <ul>
+       <div className="bg-surface rounded-lg">
+        <ul role="list">
           {notifications.length === 0 ? (
             <li className="p-4 text-muted">No notifications.</li>
           ) : (
             notifications.map(notification => (
               <li
                 key={notification.id}
-                className={`p-4 border-b border-gray-200 ${notification.read ? 'text-muted' : ''}`}
+                className={`p-4 border-b border-gray-200 cursor-pointer ${notification.read ? 'text-muted' : ''}`}
+                style={{ height: '80px' }}
+                role="listitem"
+                onClick={() => {/* open modal or navigate */ addToast('Notification clicked', 'info')}}
               >
                 <div className="flex justify-between">
                   <span>{notification.message}</span>

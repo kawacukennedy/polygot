@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 // Import pages
@@ -21,14 +21,42 @@ import AnalyticsPage from './pages/AnalyticsPage'; // Import AnalyticsPage
 // Import components
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
+import GlobalShortcuts from './components/GlobalShortcuts';
 
 function App() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   return (
     <div className="bg-bg min-h-screen flex flex-col">
-      <Header />
+      {isOffline && (
+        <div className="bg-danger text-white text-center p-2">
+          You are offline — some features are unavailable
+          <button className="ml-4 underline" onClick={() => window.location.reload()}>Reconnect</button>
+        </div>
+      )}
+      <GlobalShortcuts />
+      <Header onMenuClick={handleDrawerToggle} />
       <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 p-6">
+        <Sidebar mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
+        <main id="main" className="flex-1 p-6">
           <Routes>
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/login" element={<LoginPage />} />

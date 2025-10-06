@@ -47,12 +47,22 @@ module.exports = {
       },
       keyframes: {
         'fade-slide-in': {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '0%': { opacity: '0', transform: 'translateY(-8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-slide-out': {
+          '0%': { opacity: '1', transform: 'translateY(0)' },
+          '100%': { opacity: '0', transform: 'translateY(-8px)' },
+        },
+        'modal-enter': {
+          '0%': { opacity: '0', transform: 'scale(0.98)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
       },
       animation: {
-        'fade-slide-in': 'fade-slide-in 0.5s ease-out forwards',
+        'fade-slide-in': 'fade-slide-in 180ms cubic-bezier(.2,.9,.2,1) forwards',
+        'fade-slide-out': 'fade-slide-out 140ms forwards',
+        'modal-enter': 'modal-enter 220ms cubic-bezier(.2,.9,.2,1) forwards',
       },
     },
     screens: {

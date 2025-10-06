@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { apiCall } from '../services/apiClient';
+import Modal from '../components/Modal';
 
 const SignUpPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -14,6 +16,7 @@ const SignUpPage: React.FC = () => {
     form: '',
   });
   const [isFormValid, setIsFormValid] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
   const navigate = useNavigate();
   const { signup } = useAuth();
   const { addToast } = useToast();
@@ -36,17 +39,16 @@ const SignUpPage: React.FC = () => {
         } else {
           // Async unique check
           try {
-            const response = await fetch('/users/check-username', {
+            const data = await apiCall<{ available: boolean }>('/users/check-username', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username }),
             });
-            const data = await response.json();
             if (!data.available) {
               newErrors.username = 'Username is already taken.';
             }
-          } catch (error) {
-            // Handle network error
+          } catch (error: any) {
+            // Handle network error or API error
+            newErrors.username = error.message || 'Error checking username availability.';
           }
         }
       }
@@ -58,17 +60,16 @@ const SignUpPage: React.FC = () => {
         } else {
           // Async unique check
           try {
-            const response = await fetch('/users/check-email', {
+            const data = await apiCall<{ available: boolean }>('/users/check-email', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email }),
             });
-            const data = await response.json();
             if (!data.available) {
               newErrors.email = 'Email is already registered.';
             }
-          } catch (error) {
-            // Handle network error
+          } catch (error: any) {
+            // Handle network error or API error
+            newErrors.email = error.message || 'Error checking email availability.';
           }
         }
       }
@@ -103,23 +104,31 @@ const SignUpPage: React.FC = () => {
     if (isFormValid) {
       try {
         await signup(username, email, password);
-        // Mock analytics event
-        console.log('signup_success', { timestamp: new Date() });
+        // Analytics event
+        console.log('signup_success', { user_id: 'mock', timestamp: new Date() });
         addToast('Account created! Check your email to verify', 'success');
-        navigate('/welcome');
+        setShowVerificationModal(true);
       } catch (error: any) {
-        setErrors({ ...errors, form: error.message || 'An unexpected error occurred. Please try again.' });
-        addToast(error.message || 'An unexpected error occurred. Please try again.', 'error');
+        if (error.status === 400) {
+          // Validation error - show inline
+          setErrors({ ...errors, form: 'Validation error - check fields' });
+        } else if (error.status === 409) {
+          // Duplicate
+          setErrors({ ...errors, form: 'Username or email already exists' });
+        } else {
+          // Network or other
+          addToast('Network error - please try again', 'error');
+        }
       }
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Create an account</h1>
-      <form onSubmit={handleSubmit}>
-        {errors.form && <p className="text-danger text-sm mb-4">{errors.form}</p>}
-        <div className="mb-4">
+    <div className="max-w-3xl mx-auto p-6" style={{ maxWidth: '720px', padding: '24px' }}>
+      <form onSubmit={handleSubmit} role="form">
+        <div aria-live="polite" id="error_region"></div>
+        {errors.form && <p className="text-danger text-sm mb-4" aria-live="assertive">{errors.form}</p>}
+        <div className="mb-3">
           <label
             htmlFor="username"
             className="block text-sm font-medium text-muted mb-1"
@@ -132,11 +141,14 @@ const SignUpPage: React.FC = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="choose-a-username"
-            className={`w-full h-11 px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.username ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
+            aria-label="username"
+            tabIndex={1}
+            className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.username ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
+            style={{ height: '44px' }}
           />
           {errors.username && <p className="text-danger text-xs mt-1">{errors.username}</p>}
         </div>
-        <div className="mb-4">
+        <div className="mb-3">
           <label
             htmlFor="email"
             className="block text-sm font-medium text-muted mb-1"
@@ -149,7 +161,10 @@ const SignUpPage: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className={`w-full h-11 px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.email ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
+            aria-label="email"
+            tabIndex={2}
+            className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.email ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
+            style={{ height: '44px' }}
           />
           {errors.email && <p className="text-danger text-xs mt-1">{errors.email}</p>}
         </div>
@@ -166,21 +181,47 @@ const SignUpPage: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className={`w-full h-11 px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.password ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
+            aria-label="password"
+            tabIndex={3}
+            className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.password ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
+            style={{ height: '44px' }}
           />
           {errors.password && <p className="text-danger text-xs mt-1">{errors.password}</p>}
         </div>
         <button
           type="submit"
           disabled={!isFormValid}
-          className="w-full h-11 bg-primary text-white font-bold rounded-md hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-focus-ring disabled:bg-gray-400"
+          tabIndex={4}
+          className="w-full bg-primary text-white font-bold rounded-md hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-focus-ring disabled:bg-gray-400"
+          style={{ height: '44px', borderRadius: '8px' }}
         >
           Create account
         </button>
       </form>
-      <p className="text-xs text-muted mt-3">
+      <p className="text-xs text-muted mt-3" style={{ fontSize: '13px' }}>
         By creating an account you agree to our Terms and Privacy Policy
       </p>
+
+      <Modal isOpen={showVerificationModal} onClose={() => { setShowVerificationModal(false); navigate('/welcome'); }}>
+        <h2 id="verify_headline">Verify your email</h2>
+        <p>We sent a verification link to your email. It will expire in 15 minutes.</p>
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={() => {/* resend */}}
+            className="mr-2 px-4 py-2 bg-primary text-white rounded"
+            tabIndex={1}
+          >
+            Resend
+          </button>
+          <button
+            onClick={() => { setShowVerificationModal(false); navigate('/welcome'); }}
+            className="px-4 py-2 bg-gray-300 rounded"
+            tabIndex={2}
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

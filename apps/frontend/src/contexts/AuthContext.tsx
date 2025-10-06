@@ -21,6 +21,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const accessToken = Cookies.get('accessToken');
     if (accessToken) {
+      // In a real app, you'd validate the token with the backend
+      // For now, we'll just assume it's valid and set a dummy user
       setUser({ id: '1', name: 'Authenticated User', email: 'user@example.com', role: 'user', status: 'active' });
       setIsAuthenticated(true);
     }
@@ -28,31 +30,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
-      const response = await loginUser(email, password);
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user || { id: '1', name: 'Logged In User', email: email, role: 'user', status: 'active' });
-        setIsAuthenticated(true);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
+      const data = await loginUser(email, password); // loginUser now returns data directly
+      // Assuming backend sets httpOnly cookies, so no need to manually set them here
+      // If backend returns user data, set it
+      setUser(data.user || { id: '1', name: 'Logged In User', email: email, role: 'user', status: 'active' });
+      setIsAuthenticated(true);
     } catch (error) {
-      throw error;
+      throw error; // Re-throw the error from apiCall
     }
   };
 
   const signup = async (username: string, email: string, password: string): Promise<void> => {
     try {
-      const response = await signupUser(username, email, password);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Signup failed');
-      }
+      await signupUser(username, email, password); // signupUser now returns data directly or throws
+      // No need to check response.ok here, apiCall handles it
     } catch (error) {
-      throw error;
+      throw error; // Re-throw the error from apiCall
     }
   };
 

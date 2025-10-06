@@ -10,27 +10,29 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle }) => 
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
-    { label: 'Dashboard', icon: '📊', path: '/dashboard' },
-    { label: 'My Snippets', icon: '📝', path: '/my-snippets' },
-    { label: 'Executions', icon: '▶️', path: '/executions' },
-    { label: 'Analytics', icon: '📈', path: '/analytics' },
-    { label: 'Settings', icon: '⚙️', path: '/settings' },
+    { label: 'Dashboard', icon: '⊞', path: '/dashboard', tabIndex: 100 },
+    { label: 'My Snippets', icon: '⌘', path: '/my-snippets', tabIndex: 101 },
+    { label: 'Executions', icon: '▶', path: '/executions', tabIndex: 102 },
+    { label: 'Analytics', icon: '📊', path: '/analytics', tabIndex: 103 },
+    { label: 'Settings', icon: '⚙', path: '/settings', tabIndex: 104 },
   ];
 
   const sidebarContent = (
-    <div className={`h-full bg-surface transition-all duration-200 ease-out ${collapsed ? 'w-16' : 'w-64'}`}>
-      <div className="flex items-center justify-center h-16 border-b border-gray-200">
-        <button onClick={() => setCollapsed(!collapsed)} className="focus:outline-none">
-          {collapsed ? '▶️' : '◀️'}
+    <div className={`h-full bg-surface transition-all duration-200 ease-out ${collapsed ? 'w-16' : 'w-60'}`} style={{ padding: '16px' }}>
+      <div className="flex items-center justify-center h-16 border-b border-gray-200 mb-4">
+        <button onClick={() => setCollapsed(!collapsed)} className="focus:outline-none" aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+          {collapsed ? '▶' : '◀'}
         </button>
       </div>
-      <nav className="mt-4">
+      <nav>
         <ul>
           {menuItems.map((item) => (
-            <li key={item.label}>
+            <li key={item.label} className="relative">
               <Link
                 to={item.path}
-                className="flex items-center py-2 px-4 text-muted hover:bg-gray-100"
+                className="flex items-center py-2 px-4 text-muted hover:bg-gray-100 rounded"
+                tabIndex={item.tabIndex}
+                title={collapsed ? item.label : undefined}
               >
                 <span className="mr-3 text-xl">{item.icon}</span>
                 {!collapsed && <span>{item.label}</span>}
@@ -56,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, handleDrawerToggle }) => 
           onClick={handleDrawerToggle}
         ></div>
         <div
-          className={`fixed inset-y-0 left-0 bg-surface w-64 z-50 transform transition-transform duration-300 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`fixed inset-y-0 left-0 bg-surface w-60 z-50 transform transition-transform duration-200 ease-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
           {sidebarContent}
         </div>

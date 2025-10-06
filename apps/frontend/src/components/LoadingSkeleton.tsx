@@ -1,10 +1,21 @@
 import React from 'react';
 
-const LoadingSkeleton: React.FC = () => {
+interface LoadingSkeletonProps {
+  width?: string;
+  height?: string;
+  className?: string;
+}
+
+const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ width = '100%', height = '20px', className = '' }) => {
   return (
-    <div>
-      <p>Loading...</p>
-    </div>
+    <div
+      className={`bg-surface animate-pulse ${className}`}
+      style={{
+        width,
+        height,
+        animation: 'pulse 1200ms ease-in-out infinite',
+      }}
+    />
   );
 };
 

@@ -17,7 +17,14 @@ const LeaderboardPage: React.FC = () => {
   const [languageFilter, setLanguageFilter] = useState('all');
   const [timeFilter, setTimeFilter] = useState('7d');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [flashRows, setFlashRows] = useState<Set<number>>(new Set());
   const { addToast } = useToast();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -44,6 +51,10 @@ const LeaderboardPage: React.FC = () => {
     const socket = io('http://localhost:3001'); // Assuming WebSocket server runs on port 3001
     socket.on('leaderboard_updates', (updatedLeaderboard: LeaderboardEntry[]) => {
       setLeaderboard(updatedLeaderboard);
+      // Flash updated rows
+      const updatedRanks = new Set(updatedLeaderboard.map(e => e.rank));
+      setFlashRows(updatedRanks);
+      setTimeout(() => setFlashRows(new Set()), 600);
       addToast('Leaderboard updated in real-time!', 'info');
     });
 
@@ -53,7 +64,7 @@ const LeaderboardPage: React.FC = () => {
   }, [languageFilter, timeFilter]);
 
   const filteredLeaderboard = leaderboard.filter(entry =>
-    entry.user.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    entry.user.toLowerCase().includes(debouncedQuery.toLowerCase()) &&
     (languageFilter === 'all' || entry.language === languageFilter)
   );
 
@@ -66,6 +77,7 @@ const LeaderboardPage: React.FC = () => {
             value={languageFilter}
             onChange={(e) => setLanguageFilter(e.target.value)}
             className="h-11 px-3 bg-surface border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            tabIndex={1}
           >
             <option value="all">All Languages</option>
             <option value="python">Python</option>
@@ -77,7 +89,7 @@ const LeaderboardPage: React.FC = () => {
             <option value="rust">Rust</option>
             <option value="ruby">Ruby</option>
           </select>
-          <div className="flex bg-surface rounded-md border border-gray-300">
+          <div className="flex bg-surface rounded-md border border-gray-300" role="group" tabIndex={2}>
             <button
               onClick={() => setTimeFilter('7d')}
               className={`px-4 py-2 rounded-l-md ${timeFilter === '7d' ? 'bg-primary text-white' : ''}`}
@@ -104,36 +116,55 @@ const LeaderboardPage: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="h-11 px-3 bg-surface border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-focus-ring"
+          tabIndex={3}
         />
       </div>
       {loading ? (
         <LoadingSkeleton />
       ) : (
-        <div className="bg-surface rounded-lg">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="p-4 text-left">Rank</th>
-                <th className="p-4 text-left">User</th>
-                <th className="p-4 text-left">Score</th>
-                <th className="p-4 text-left">Language</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLeaderboard.map((entry) => (
-                <tr key={entry.rank} className="border-b border-gray-200">
-                  <td className="p-4">{entry.rank}</td>
-                  <td className="p-4 flex items-center">
-                    <img src={entry.avatar} alt={entry.user} className="w-10 h-10 rounded-full mr-4" />
-                    {entry.user}
-                  </td>
-                  <td className="p-4">{entry.score}</td>
-                  <td className="p-4">{entry.language}</td>
+        {filteredLeaderboard.length === 0 ? (
+          <p className="text-muted">No results — broaden filters</p>
+        ) : (
+          <div className="bg-surface rounded-lg">
+            <table className="w-full" role="table">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="p-4 text-left">Rank</th>
+                  <th className="p-4 text-left">User</th>
+                  <th className="p-4 text-left">Score</th>
+                  <th className="p-4 text-left">Language</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredLeaderboard.map((entry) => (
+                  <tr
+                    key={entry.rank}
+                    className={`border-b border-gray-200 ${flashRows.has(entry.rank) ? 'bg-yellow-200 animate-pulse' : ''}`}
+                    style={{ height: '64px' }}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowDown') {
+                        const next = e.currentTarget.nextElementSibling as HTMLElement;
+                        next?.focus();
+                      } else if (e.key === 'ArrowUp') {
+                        const prev = e.currentTarget.previousElementSibling as HTMLElement;
+                        prev?.focus();
+                      }
+                    }}
+                  >
+                    <td className="p-4">{entry.rank}</td>
+                    <td className="p-4 flex items-center">
+                      <img src={entry.avatar} alt={entry.user} className="w-10 h-10 rounded-full mr-4" />
+                      {entry.user}
+                    </td>
+                    <td className="p-4">{entry.score}</td>
+                    <td className="p-4">{entry.language}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       )}
     </div>
   );

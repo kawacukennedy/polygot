@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import { useToast } from '../contexts/ToastContext';
+import { apiCall } from '../services/apiClient'; // Import apiCall
 
 interface SnippetSummary {
   id: string;
@@ -30,8 +31,8 @@ const RecentSnippets: React.FC<{ snippets: SnippetSummary[] }> = ({ snippets }) 
   <div className="bg-surface rounded-lg p-6 min-h-[220px]">
     <h2 className="text-xl font-bold mb-4">Recent Snippets</h2>
     <ul>
-      {snippets.map(snippet => (
-        <li key={snippet.id} className="mb-2">
+      {snippets.slice(0, 5).map(snippet => (
+        <li key={snippet.id} className="mb-2 h-18 flex items-center">
           <a href={`/snippets/${snippet.id}`} className="text-primary hover:underline">
             {snippet.title} ({snippet.language})
           </a>
@@ -45,12 +46,15 @@ const LeaderboardPreview: React.FC<{ entries: LeaderboardEntry[] }> = ({ entries
   <div className="bg-surface rounded-lg p-6 min-h-[220px]">
     <h2 className="text-xl font-bold mb-4">Leaderboard</h2>
     <ul>
-      {entries.map(entry => (
+      {entries.slice(0, 5).map(entry => (
         <li key={entry.id} className="mb-2">
           {entry.user}: {entry.score}
         </li>
       ))}
     </ul>
+    <button className="mt-4 text-primary hover:underline" onClick={() => window.location.href = '/leaderboard'}>
+      View more
+    </button>
   </div>
 );
 
@@ -58,10 +62,11 @@ const AchievementsPanel: React.FC<{ achievements: Achievement[] }> = ({ achievem
   <div className="bg-surface rounded-lg p-6 min-h-[220px]">
     <h2 className="text-xl font-bold mb-4">Achievements</h2>
     <div className="grid grid-cols-3 gap-4">
-      {achievements.map(achievement => (
+      {achievements.filter(a => a.unlocked).slice(0, 6).map(achievement => (
         <div
           key={achievement.id}
-          className={`h-20 rounded-md flex items-center justify-center ${achievement.unlocked ? 'bg-success text-white' : 'bg-gray-200 text-gray-500'}`}
+          className={`h-20 rounded-md flex items-center justify-center bg-success text-white animate-pulse`}
+          style={{ animation: 'confetti 800ms' }}
         >
           {achievement.name}
         </div>
@@ -81,17 +86,11 @@ const DashboardPage: React.FC = () => {
     setLoading(true);
     setError(false);
     try {
-      const response = await fetch('/api/dashboard/summary');
-      if (response.ok) {
-        const data: DashboardSummary = await response.json();
-        setDashboardData(data);
-      } else {
-        setError(true);
-        addToast('Failed to load dashboard data.', 'error');
-      }
-    } catch (err) {
+      const data = await apiCall<DashboardSummary>('/dashboard/summary');
+      setDashboardData(data);
+    } catch (err: any) {
       setError(true);
-      addToast('Network error while fetching dashboard data.', 'error');
+      addToast(err.message || 'Failed to load dashboard data.', 'error');
     } finally {
       setLoading(false);
     }
@@ -104,9 +103,9 @@ const DashboardPage: React.FC = () => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <LoadingSkeleton />
-        <LoadingSkeleton />
-        <LoadingSkeleton />
+        <LoadingSkeleton height="220px" />
+        <LoadingSkeleton height="220px" />
+        <LoadingSkeleton height="220px" />
       </div>
     );
   }
@@ -126,7 +125,7 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" style={{ gap: '24px' }}>
       <RecentSnippets snippets={dashboardData.recent_snippets} />
       <LeaderboardPreview entries={dashboardData.leaderboard_preview} />
       <AchievementsPanel achievements={dashboardData.achievements_panel} />
