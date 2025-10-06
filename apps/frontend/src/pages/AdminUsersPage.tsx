@@ -19,7 +19,7 @@ const AdminUsersPage = () => {
       }
 
       try {
-        const data = await getUsersAdmin();
+        const data = await getUsersAdmin() as any;
         setUsers(data);
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred.');

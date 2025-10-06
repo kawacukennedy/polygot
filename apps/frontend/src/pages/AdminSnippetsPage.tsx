@@ -27,7 +27,7 @@ const AdminSnippetsPage: React.FC = () => {
       }
 
       try {
-        const snippetsData = await getSnippetsAdmin();
+        const snippetsData = await getSnippetsAdmin() as any;
         setSnippets(snippetsData);
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred while fetching snippets.');

@@ -136,7 +136,6 @@ const SnippetEditorPage: React.FC = () => {
               fontSize: 14,
               tabSize: 2,
               minimap: { enabled: false },
-              formatOnSave: true,
               folding: true,
               autoClosingBrackets: 'always',
               renderWhitespace: 'boundary',
@@ -144,9 +143,15 @@ const SnippetEditorPage: React.FC = () => {
             onMount={(editor) => {
               editorRef.current = editor;
               // Keybindings
-              editor.addCommand(editor.getModel().getLanguageId() === 'javascript' ? 2048 : 2048, () => handleRun()); // Ctrl+Enter
+              const model = editor.getModel();
+              if (model) {
+                editor.addCommand(model.getLanguageId() === 'javascript' ? 2048 : 2048, () => handleRun()); // Ctrl+Enter
+              }
               editor.addCommand(2089, () => handleSave()); // Ctrl+S
-              editor.addCommand(2063, () => editor.getAction('editor.action.commentLine').run()); // Ctrl+/
+              const commentAction = editor.getAction('editor.action.commentLine');
+              if (commentAction) {
+                editor.addCommand(2063, () => commentAction.run()); // Ctrl+/
+              }
             }}
           />
         </div>

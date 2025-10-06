@@ -32,8 +32,8 @@ const TopUsersAnalyticsPage: React.FC = () => {
       }
 
       try {
-        const analyticsData = await getTopUsers({ language: selectedLanguage, timePeriod: selectedPeriod });
-        setTopUsers(analyticsData);
+        const analyticsData = await getTopUsers() as any;
+        setTopUsers(analyticsData.topUsers || analyticsData);
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred while fetching top users analytics.');
       } finally {

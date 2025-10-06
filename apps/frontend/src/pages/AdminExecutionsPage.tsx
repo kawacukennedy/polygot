@@ -29,7 +29,7 @@ const AdminExecutionsPage: React.FC = () => {
 
       try {
         // Assuming fetchExecutions is implemented in ../services/api.ts
-        const executionsData = await getExecutionsAdmin();
+        const executionsData = await getExecutionsAdmin() as any;
         setExecutions(executionsData);
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred while fetching executions.');

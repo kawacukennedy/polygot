@@ -1,14 +1,24 @@
 import { apiCall } from './apiClient';
 
+// API Response types
+interface ApiResponse {
+  status?: 'ok' | 'error';
+  message?: string;
+  error_code?: string;
+  field?: string;
+  data?: any;
+  [key: string]: any;
+}
+
 // Authentication API functions
-export const loginUser = async (email: string, password: string) => {
+export const loginUser = async (email: string, password: string): Promise<any> => {
   return apiCall('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 };
 
-export const signupUser = async (username: string, email: string, password: string) => {
+export const signupUser = async (username: string, email: string, password: string): Promise<any> => {
   return apiCall('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ username, email, password }),
@@ -16,7 +26,7 @@ export const signupUser = async (username: string, email: string, password: stri
 };
 
 // Snippet API functions
-export const getSnippets = async (filters?: { language?: string; visibility?: string; searchTitle?: string; page?: number; pageSize?: number; userId?: string }) => {
+export const getSnippets = async (filters?: { language?: string; visibility?: string; searchTitle?: string; page?: number; pageSize?: number; userId?: string }): Promise<any> => {
   const params = new URLSearchParams();
   if (filters?.language) {
     params.append('language', filters.language);
@@ -47,60 +57,46 @@ export const getSnippets = async (filters?: { language?: string; visibility?: st
   });
 };
 
-export const createSnippet = async (title: string, language: string, code: string, visibility: 'public' | 'private') => {
+export const createSnippet = async (title: string, language: string, code: string, visibility: 'public' | 'private'): Promise<any> => {
   return apiCall('/snippets', {
     method: 'POST',
     body: JSON.stringify({ title, language, code, visibility }),
   });
 };
 
-export const getSnippetById = async (id: string) => {
+export const getSnippetById = async (id: string): Promise<any> => {
   return apiCall(`/snippets/${id}`, {
     method: 'GET',
   });
 };
 
-export const updateSnippet = async (id: string, title: string, language: string, code: string, visibility: 'public' | 'private') => {
+export const updateSnippet = async (id: string, title: string, language: string, code: string, visibility: 'public' | 'private'): Promise<any> => {
   return apiCall(`/snippets/${id}`, {
     method: 'PUT',
     body: JSON.stringify({ title, language, code, visibility }),
   });
 };
 
-export const deleteSnippet = async (id: string) => {
+export const deleteSnippet = async (id: string): Promise<any> => {
   return apiCall(`/snippets/${id}`, {
     method: 'DELETE',
   });
 };
 
 // Analytics API functions
-export const getTopUsers = async (filters?: { language?: string; timePeriod?: string; sortBy?: string }) => {
-  const params = new URLSearchParams();
-  if (filters?.language) {
-    params.append('language', filters.language);
-  }
-  if (filters?.timePeriod) {
-    params.append('timePeriod', filters.timePeriod);
-  }
-  if (filters?.sortBy) {
-    params.append('sortBy', filters.sortBy);
-  }
-
-  const queryString = params.toString();
-  const url = `/analytics/top-users${queryString ? `?${queryString}` : ''}`;
-
-  return apiCall(url, {
+export const getTopUsers = async (): Promise<any> => {
+  return apiCall('/analytics/top-users', {
     method: 'GET',
   });
 };
 
-export const getPopularLanguages = async () => {
+export const getPopularLanguages = async (): Promise<any> => {
   return apiCall('/analytics/popular-languages', {
     method: 'GET',
   });
 };
 
-export const getRecentExecutions = async (limit: number = 10) => {
+export const getRecentExecutions = async (limit: number = 10): Promise<any> => {
   return apiCall(`/execute/recent?limit=${limit}`, {
     method: 'GET',
   });
@@ -108,21 +104,21 @@ export const getRecentExecutions = async (limit: number = 10) => {
 
 
 // User Profile API functions
-export const updateUserProfile = async (userId: string, name: string, email: string, bio: string) => {
+export const updateUserProfile = async (userId: string, name: string, email: string, bio: string): Promise<any> => {
   return apiCall(`/users/${userId}`, {
     method: 'PUT',
     body: JSON.stringify({ name, email, bio }),
   });
 };
 
-export const changeUserPassword = async (userId: string, currentPassword: string, newPassword: string) => {
+export const changeUserPassword = async (userId: string, currentPassword: string, newPassword: string): Promise<any> => {
   return apiCall(`/users/${userId}/password`, {
     method: 'PUT',
     body: JSON.stringify({ currentPassword, newPassword }),
   });
 };
 
-export const uploadAvatar = async (userId: string, file: File) => {
+export const uploadAvatar = async (userId: string, file: File): Promise<any> => {
   const formData = new FormData();
   formData.append('avatar', file);
 
@@ -135,105 +131,83 @@ export const uploadAvatar = async (userId: string, file: File) => {
   });
 };
 
-// Admin API functions (Placeholders)
-export const getUsersAdmin = async () => {
-  // Placeholder for fetching all users for admin panel
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        ok: true,
-        json: () => Promise.resolve([
-          { id: 'user1', name: 'Admin User', email: 'admin@example.com', role: 'admin', status: 'active' },
-          { id: 'user2', name: 'Regular User', email: 'user@example.com', role: 'user', status: 'active' },
-        ]),
-      });
-    }, 500);
+export const getUser = async (id: string): Promise<any> => {
+  return apiCall(`/users/${id}`, {
+    method: 'GET',
   });
 };
 
-export const promoteUserAdmin = async (userId: string) => {
+// Admin API functions (Placeholders)
+export const getUsersAdmin = async (): Promise<any[]> => {
+  // Placeholder for fetching all users for admin panel
+  return [
+    { id: 'user1', name: 'Admin User', email: 'admin@example.com', role: 'admin', status: 'active' },
+    { id: 'user2', name: 'Regular User', email: 'user@example.com', role: 'user', status: 'active' },
+  ];
+};
+
+export const promoteUserAdmin = async (userId: string): Promise<any> => {
   console.log(`Admin: Promoting user ${userId}`);
   return { ok: true }; // Simulate success
 };
 
-export const deactivateUserAdmin = async (userId: string) => {
+export const deactivateUserAdmin = async (userId: string): Promise<any> => {
   console.log(`Admin: Deactivating user ${userId}`);
   return { ok: true }; // Simulate success
 };
 
-export const deleteUserAdmin = async (userId: string) => {
+export const deleteUserAdmin = async (userId: string): Promise<any> => {
   console.log(`Admin: Deleting user ${userId}`);
   return { ok: true }; // Simulate success
 };
 
-export const getSnippetsAdmin = async () => {
+export const getSnippetsAdmin = async (): Promise<any[]> => {
   // Placeholder for fetching all snippets for admin panel
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        ok: true,
-        json: () => Promise.resolve([
-          { id: 'snip1', title: 'Admin Snippet 1', language: 'python', visibility: 'public' },
-          { id: 'snip2', title: 'Admin Snippet 2', language: 'javascript', visibility: 'private' },
-        ]),
-      });
-    }, 500);
-  });
+  return [
+    { id: 'snip1', title: 'Admin Snippet 1', language: 'python', visibility: 'public' },
+    { id: 'snip2', title: 'Admin Snippet 2', language: 'javascript', visibility: 'private' },
+  ];
 };
 
-export const deleteSnippetAdmin = async (snippetId: string) => {
+export const deleteSnippetAdmin = async (snippetId: string): Promise<any> => {
   console.log(`Admin: Deleting snippet ${snippetId}`);
   return { ok: true }; // Simulate success
 };
 
-export const flagSnippetAdmin = async (snippetId: string) => {
+export const flagSnippetAdmin = async (snippetId: string): Promise<any> => {
   console.log(`Admin: Flagging snippet ${snippetId}`);
   return { ok: true }; // Simulate success
 };
 
-export const getExecutionsAdmin = async () => {
+export const getExecutionsAdmin = async (): Promise<any[]> => {
   // Placeholder for fetching all executions for admin panel
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        ok: true,
-        json: () => Promise.resolve([
-          { id: 'exec1', snippet_id: 'snip1', status: 'success', runtime: 'python', duration: 120 },
-          { id: 'exec2', snippet_id: 'snip2', status: 'failed', runtime: 'javascript', duration: 200 },
-        ]),
-      });
-    }, 500);
-  });
+  return [
+    { id: 'exec1', snippet_id: 'snip1', status: 'success', runtime: 'python', duration: 120 },
+    { id: 'exec2', snippet_id: 'snip2', status: 'failed', runtime: 'javascript', duration: 200 },
+  ];
 };
 
-export const rerunExecutionAdmin = async (executionId: string) => {
+export const rerunExecutionAdmin = async (executionId: string): Promise<any> => {
   console.log(`Admin: Re-running execution ${executionId}`);
   return { ok: true }; // Simulate success
 };
 
-export const killExecutionAdmin = async (executionId: string) => {
+export const killExecutionAdmin = async (executionId: string): Promise<any> => {
   console.log(`Admin: Killing execution ${executionId}`);
   return { ok: true }; // Simulate success
 };
 
-export const getSystemHealthMetrics = async () => {
+export const getSystemHealthMetrics = async (): Promise<any> => {
   // Placeholder for fetching system health metrics
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        ok: true,
-        json: () => Promise.resolve({
-          queue_depth: 5,
-          api_latency: '50ms',
-          db_replication_lag: '10s',
-        }),
-      });
-    }, 500);
-  });
+  return {
+    queue_depth: 5,
+    api_latency: '50ms',
+    db_replication_lag: '10s',
+  };
 };
 
 // Execution API functions
-export const executeCode = async (language: string, code: string) => {
+export const executeCode = async (language: string, code: string): Promise<any> => {
   return apiCall('/execute', {
     method: 'POST',
     body: JSON.stringify({ language, code }),

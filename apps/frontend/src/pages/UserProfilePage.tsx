@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { updateUserProfile } from '../services/api';
+import { updateUserProfile, getUser } from '../services/api';
 
 interface UserProfile {
   id: string;
@@ -33,7 +33,7 @@ const UserProfilePage: React.FC = () => {
       }
 
       try {
-        const userData = await fetchUser(id, token);
+        const userData = await getUser(id) as any;
         if (userData.status === 'error') {
           setError(userData.message || 'Failed to fetch user details.');
         } else {

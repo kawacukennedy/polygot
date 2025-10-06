@@ -161,7 +161,7 @@ const SnippetViewPage: React.FC = () => {
             theme="vs-dark"
             options={{
               readOnly: true,
-              showLineNumbers: true,
+              lineNumbers: 'on',
               fontSize: 14,
               minimap: { enabled: false },
             }}

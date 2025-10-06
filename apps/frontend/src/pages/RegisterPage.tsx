@@ -62,7 +62,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ showNotification }) => {
     }
 
     try {
-      const response = await signupUser(email, email, password);
+      const response = await signupUser(email, email, password) as any;
 
       if (response.status === 'ok') {
         showNotification(t('registration_successful'), 'success');

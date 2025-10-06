@@ -30,12 +30,12 @@ const ExecuteSnippetPage: React.FC = () => {
     }
 
     try {
-      const response = await executeCode('javascript', input); // Placeholder
+      const response = await executeCode('javascript', input) as any; // Placeholder
 
       if (response.status === 'error') {
         setError(response.message || 'Failed to execute snippet.');
       } else {
-        setExecutionResult(response);
+        setExecutionResult(response as any);
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred while executing the snippet.');
