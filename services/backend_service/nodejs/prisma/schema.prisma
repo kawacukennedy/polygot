@@ -20,6 +20,10 @@ model User {
   privacyLevel      Privacy  @default(PUBLIC)
   twoFactorEnabled  Boolean  @default(false)
   twoFactorSecret   String?
+  displayName       String?
+  bio               String?
+  avatarUrl         String?
+  achievements      String[] @default([])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -27,6 +31,7 @@ model User {
   executions        Execution[]
   notifications     Notification[]
   auditLogs         AuditLog[]
+  comments          Comment[]
   leaderboard       Leaderboard?
 
   @@map("users")

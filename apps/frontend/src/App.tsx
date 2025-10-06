@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { Alert, AlertDescription } from './components/ui/alert';
+import { Button } from './components/ui/button';
 
 // Import pages
 import SignUpPage from './pages/SignUpPage';
@@ -45,18 +47,30 @@ function App() {
   };
 
   return (
-    <div className="bg-bg min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
+      {/* Skip links for accessibility */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-primary text-primary-foreground px-4 py-2 rounded z-50"
+      >
+        Skip to main content
+      </a>
+
       {isOffline && (
-        <div className="bg-danger text-white text-center p-2">
-          You are offline — some features are unavailable
-          <button className="ml-4 underline" onClick={() => window.location.reload()}>Reconnect</button>
-        </div>
+        <Alert variant="destructive" className="rounded-none">
+          <AlertDescription className="flex items-center justify-between">
+            <span>You are offline — some features are unavailable</span>
+            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+              Reconnect
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
       <GlobalShortcuts />
       <Header onMenuClick={handleDrawerToggle} />
       <div className="flex flex-1">
         <Sidebar mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
-        <main id="main" className="flex-1 p-6">
+        <main id="main" className="flex-1 p-6" tabIndex={-1}>
           <Routes>
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/login" element={<LoginPage />} />

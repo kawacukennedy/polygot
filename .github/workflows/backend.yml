@@ -8,6 +8,62 @@ on:
       - 'services/**'
 
 jobs:
+  test-backend-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./services/backend_service/nodejs
+
+      - name: Lint code
+        run: npm run lint
+        working-directory: ./services/backend_service/nodejs
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./services/backend_service/nodejs
+
+      - name: Build project
+        run: npm run build
+        working-directory: ./services/backend_service/nodejs
+
+  deploy-backend-service:
+    needs: test-backend-service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./services/backend_service/nodejs
+
+      - name: Build project
+        run: npm run build
+        working-directory: ./services/backend_service/nodejs
+
+      - name: Deploy Backend Service to Railway
+        run: railway deploy --service backend-service --commit-hash ${{ github.sha }}
+        working-directory: ./services/backend_service/nodejs
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
   deploy-user-service:
     runs-on: ubuntu-latest
     steps:

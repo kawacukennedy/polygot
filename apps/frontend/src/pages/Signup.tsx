@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Container,
-  Alert,
-  Link as MuiLink,
-} from '@mui/material';
+import { useNavigate, Link } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 
@@ -25,8 +20,8 @@ const SignupPage: React.FC = () => {
   };
 
   const validatePassword = (password: string) => {
-    const hasMinLength = password.length >= 8;
-    const hasSpecialChar = /[!@#$%^&*(),.?\":{}|<>]/.test(password);
+    const hasMinLength = password.length >= 12;
+    const hasSpecialChar = /[@$!%*?&]/.test(password);
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
@@ -47,7 +42,7 @@ const SignupPage: React.FC = () => {
     }
 
     if (!validatePassword(password)) {
-      showNotification('Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.', 'error');
+      showNotification('Password must be at least 12 characters with upper, lower, number, and special character.', 'error');
       return;
     }
 
@@ -61,72 +56,69 @@ const SignupPage: React.FC = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Typography component="h1" variant="h5">
-          Sign Up
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
-            autoFocus
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            error={!!email && !validateEmail(email)}
-            helperText={!!email && !validateEmail(email) ? 'Invalid email format' : ''}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={!!password && !validatePassword(password)}
-            helperText={!!password && !validatePassword(password) ? 'Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char' : ''}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Sign Up
-          </Button>
-          <MuiLink component="button" variant="body2" onClick={() => navigate('/login')}> 
-            {"Already have an account? Log In"}
-          </MuiLink>
-        </Box>
-      </Box>
-    </Container>
+    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+      <Card className="w-full max-w-lg">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">Sign Up</CardTitle>
+          <CardDescription className="text-center">
+            Create your account to start sharing code
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className={!!email && !validateEmail(email) ? "border-red-500" : ""}
+              />
+              {!!email && !validateEmail(email) && (
+                <p className="text-sm text-red-500">Invalid email format</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className={!!password && !validatePassword(password) ? "border-red-500" : ""}
+              />
+              {!!password && !validatePassword(password) && (
+                <p className="text-sm text-red-500">Min 12 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char</p>
+              )}
+            </div>
+            <Button type="submit" className="w-full">
+              Sign Up
+            </Button>
+          </form>
+          <div className="mt-4 text-center text-sm">
+            Already have an account?{" "}
+            <Link to="/login" className="underline">
+              Log In
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

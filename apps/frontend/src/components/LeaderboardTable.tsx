@@ -1,25 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
-  Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from '@mui/material';
 import { getTopUsers } from '../services/api';
 import { LeaderboardEntry } from '../types/Leaderboard';
 import { useAuth } from '../contexts/AuthContext';
-import { useNotification } from '../contexts/NotificationContext';
+import { useToast } from '../contexts/ToastContext';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Alert, AlertDescription } from './ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Label } from './ui/label';
+import { Loader2 } from 'lucide-react';
 import { io } from 'socket.io-client';
 
 const LeaderboardTable: React.FC = () => {
@@ -30,7 +18,7 @@ const LeaderboardTable: React.FC = () => {
   const [languageFilter, setLanguageFilter] = useState<string>('');
   const [timePeriodFilter, setTimePeriodFilter] = useState<string>('7d'); // Default to 7 days
   const [sortBy, setSortBy] = useState<string>('score_desc'); // Default sorting
-  const { showNotification } = useNotification();
+  const { addToast } = useToast();
 
   const socketRef = React.useRef<any>(null);
 
@@ -42,10 +30,10 @@ const LeaderboardTable: React.FC = () => {
         console.log('Connected to WebSocket for leaderboard');
       });
 
-      socketRef.current.on('leaderboard_updated', () => {
-        showNotification('Leaderboard updated in real-time!', 'info');
-        fetchLeaderboard({ language: languageFilter, timePeriod: timePeriodFilter, sortBy: sortBy });
-      });
+       socketRef.current.on('leaderboard_updated', () => {
+         addToast('Leaderboard updated in real-time!', 'info');
+         fetchLeaderboard({ language: languageFilter, timePeriod: timePeriodFilter, sortBy: sortBy });
+       });
 
       socketRef.current.on('disconnect', () => {
         console.log('Disconnected from WebSocket for leaderboard');
@@ -61,27 +49,20 @@ const LeaderboardTable: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getTopUsers(filters);
-      if (response.ok) {
-        const data = await response.json();
-        // The API should ideally return ranked data, but for now, we map it.
-        // If sortBy is 'rank_asc', the API should handle it, or we sort here.
-        const mappedData: LeaderboardEntry[] = data.map((item: any, index: number) => ({
-          rank: index + 1, // Assuming API returns data already sorted by score_desc
-          user: item.user.name || 'N/A',
-          score: item.score || 0,
-          language: item.language || 'N/A',
-          snippetsShared: item.snippetsShared || 0,
-        }));
-        setLeaderboard(mappedData);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch leaderboard');
-        showNotification(errorData.message || 'Failed to fetch leaderboard', 'error');
-      }
-    } catch (err) {
-      setError('Network error while fetching leaderboard');
-      showNotification('Network error while fetching leaderboard', 'error');
+      const data = await getTopUsers(filters);
+      // The API should ideally return ranked data, but for now, we map it.
+      // If sortBy is 'rank_asc', the API should handle it, or we sort here.
+      const mappedData: LeaderboardEntry[] = data.map((item: any, index: number) => ({
+        rank: index + 1, // Assuming API returns data already sorted by score_desc
+        user: item.user.name || 'N/A',
+        score: item.score || 0,
+        language: item.language || 'N/A',
+        snippetsShared: item.snippetsShared || 0,
+      }));
+      setLeaderboard(mappedData);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch leaderboard');
+      addToast(err.message || 'Failed to fetch leaderboard', 'error');
     } finally {
       setLoading(false);
     }
@@ -95,103 +76,102 @@ const LeaderboardTable: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <Alert severity="info">Please log in to view the leaderboard.</Alert>
+      <Alert>
+        <AlertDescription>Please log in to view the leaderboard.</AlertDescription>
+      </Alert>
     );
   }
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" mt={4}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center mt-4">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error">{error}</Alert>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <Box>
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box display="flex" gap={2} flexWrap="wrap">
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel id="language-filter-label">Language</InputLabel>
-            <Select
-              labelId="language-filter-label"
-              id="language-filter"
-              value={languageFilter}
-              label="Language"
-              onChange={(e) => setLanguageFilter(e.target.value as string)}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="javascript">JavaScript</MenuItem>
-              <MenuItem value="python">Python</MenuItem>
-              <MenuItem value="java">Java</MenuItem>
-              <MenuItem value="cpp">C++</MenuItem>
-              <MenuItem value="go">Go</MenuItem>
-              <MenuItem value="rust">Rust</MenuItem>
+    <div>
+      <Card className="p-4 mb-6">
+        <div className="flex gap-4 flex-wrap">
+          <div className="space-y-2">
+            <Label htmlFor="language-filter">Language</Label>
+            <Select value={languageFilter} onValueChange={setLanguageFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All</SelectItem>
+                <SelectItem value="javascript">JavaScript</SelectItem>
+                <SelectItem value="python">Python</SelectItem>
+                <SelectItem value="java">Java</SelectItem>
+                <SelectItem value="cpp">C++</SelectItem>
+                <SelectItem value="go">Go</SelectItem>
+                <SelectItem value="rust">Rust</SelectItem>
+              </SelectContent>
             </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel id="time-period-filter-label">Time Period</InputLabel>
-            <Select
-              labelId="time-period-filter-label"
-              id="time-period-filter"
-              value={timePeriodFilter}
-              label="Time Period"
-              onChange={(e) => setTimePeriodFilter(e.target.value as string)}
-            >
-              <MenuItem value="7d">Last 7 Days</MenuItem>
-              <MenuItem value="30d">Last 30 Days</MenuItem>
-              <MenuItem value="all">All Time</MenuItem>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="time-period-filter">Time Period</Label>
+            <Select value={timePeriodFilter} onValueChange={setTimePeriodFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Last 7 Days</SelectItem>
+                <SelectItem value="30d">Last 30 Days</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+              </SelectContent>
             </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel id="sort-by-label">Sort By</InputLabel>
-            <Select
-              labelId="sort-by-label"
-              id="sort-by"
-              value={sortBy}
-              label="Sort By"
-              onChange={(e) => setSortBy(e.target.value as string)}
-            >
-              <MenuItem value="score_desc">Score (High to Low)</MenuItem>
-              <MenuItem value="rank_asc">Rank (Low to High)</MenuItem>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sort-by">Sort By</Label>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="score_desc">Score (High to Low)</SelectItem>
+                <SelectItem value="rank_asc">Rank (Low to High)</SelectItem>
+              </SelectContent>
             </Select>
-          </FormControl>
-        </Box>
-      </Paper>
+          </div>
+        </div>
+      </Card>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="leaderboard table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Rank</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell align="right">Score</TableCell>
-              <TableCell>Language</TableCell>
-              <TableCell align="right">Snippets Shared</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      <Card>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left p-4">Rank</th>
+              <th className="text-left p-4">User</th>
+              <th className="text-right p-4">Score</th>
+              <th className="text-left p-4">Language</th>
+              <th className="text-right p-4">Snippets Shared</th>
+            </tr>
+          </thead>
+          <tbody>
             {leaderboard.map((entry) => (
-              <TableRow key={entry.rank}>
-                <TableCell component="th" scope="row">
-                  {entry.rank}
-                </TableCell>
-                <TableCell>{entry.user}</TableCell>
-                <TableCell align="right">{entry.score}</TableCell>
-                <TableCell>{entry.language}</TableCell>
-                <TableCell align="right">{entry.snippetsShared}</TableCell>
-              </TableRow>
+              <tr key={entry.rank} className="border-b">
+                <td className="p-4 font-medium">{entry.rank}</td>
+                <td className="p-4">{entry.user}</td>
+                <td className="p-4 text-right">{entry.score}</td>
+                <td className="p-4">{entry.language}</td>
+                <td className="p-4 text-right">{entry.snippetsShared}</td>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+          </tbody>
+        </table>
+      </Card>
+    </div>
   );
 };
 

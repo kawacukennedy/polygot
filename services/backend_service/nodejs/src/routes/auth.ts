@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import speakeasy from 'speakeasy';
 import rateLimit from 'express-rate-limit';
 import { PrismaClient } from '@prisma/client';
+import { trackSignupSuccess, trackLoginSuccess } from '../services/analytics';
+import { validateSignup, sanitizeInput } from '../middleware/security';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -16,20 +18,9 @@ const authLimiter = rateLimit({
 });
 
 // Signup
-router.post('/signup', authLimiter, async (req, res) => {
+router.post('/signup', authLimiter, sanitizeInput, validateSignup, async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
-    // Validate input
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
-
-    // Check password policy
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({ message: 'Password must be at least 12 characters with upper, lower, number, and special character' });
-    }
 
     // Check if user exists
     const existingUser = await prisma.user.findFirst({
@@ -56,6 +47,9 @@ router.post('/signup', authLimiter, async (req, res) => {
         passwordHash
       }
     });
+
+    // Track signup event
+    trackSignupSuccess(user.id, req.ip);
 
     // Generate JWT
     const token = jwt.sign(
@@ -100,6 +94,9 @@ router.post('/login', async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+
+    // Track login event
+    trackLoginSuccess(user.id, req.ip);
 
     const token = jwt.sign(
       { userId: user.id, role: user.role },

@@ -2,12 +2,15 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate } from '../middleware/auth';
 import { executeCode } from '../services/execution';
+import { awardPoints } from '../services/gamification';
+import { trackSnippetRun } from '../services/analytics';
+import { validateSnippet, sanitizeInput } from '../middleware/security';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // Create snippet
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, sanitizeInput, validateSnippet, async (req, res) => {
   try {
     const { title, code, language, visibility, tags } = req.body;
 
@@ -21,6 +24,9 @@ router.post('/', authenticate, async (req, res) => {
         ownerId: req.user!.userId
       }
     });
+
+    // Award points for sharing snippet
+    await awardPoints(req.user!.userId, 'snippet_shared');
 
     res.status(201).json(snippet);
   } catch (error) {
@@ -94,6 +100,18 @@ router.post('/:id/run', authenticate, async (req, res) => {
             finishedAt: new Date()
           }
         });
+
+        // Track analytics event
+        trackSnippetRun(
+          req.user!.userId,
+          snippet.id,
+          result.executionTime,
+          result.success ? 'success' : 'error',
+          req.ip
+        );
+
+        // Award points for running snippet
+        await awardPoints(req.user!.userId, 'snippet_run');
       })
       .catch(async (error) => {
         await prisma.execution.update({
@@ -104,6 +122,15 @@ router.post('/:id/run', authenticate, async (req, res) => {
             finishedAt: new Date()
           }
         });
+
+        // Track failed execution
+        trackSnippetRun(
+          req.user!.userId,
+          snippet.id,
+          0,
+          'error',
+          req.ip
+        );
       });
 
     res.status(202).json({ executionId: execution.id });

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
 import Modal from '../components/Modal';
 
@@ -73,90 +77,86 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6" style={{ maxWidth: '640px', padding: '24px' }}>
-      <form onSubmit={handleSubmit} role="form">
-        <div aria-live="polite"></div>
-        {errors.form && <p className="text-danger text-sm mb-4" aria-live="assertive">{errors.form}</p>}
-        <div className="mb-4">
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-muted mb-1"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            tabIndex={1}
-            className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.email ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
-            style={{ height: '44px' }}
-          />
-          {errors.email && <p className="text-danger text-xs mt-1">{errors.email}</p>}
-        </div>
-        <div className="mb-4">
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-muted mb-1"
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            tabIndex={2}
-            className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.password ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
-            style={{ height: '44px' }}
-          />
-          {errors.password && <p className="text-danger text-xs mt-1">{errors.password}</p>}
-        </div>
-        <div className="flex items-center justify-between mb-4">
-          <a href="/auth/forgot" className="text-sm text-primary hover:underline" tabIndex={4}>
-            Forgot password?
-          </a>
-        </div>
-        <button
-          type="submit"
-          disabled={!isFormValid}
-          tabIndex={3}
-          className="w-full bg-primary text-white font-bold rounded-md hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-focus-ring disabled:bg-gray-400"
-          style={{ height: '44px' }}
-        >
-          Login
-        </button>
-      </form>
+    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+      <Card className="w-full max-w-lg">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">Login</CardTitle>
+          <CardDescription className="text-center">
+            Enter your credentials to access your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {errors.form && (
+              <div className="text-sm text-red-500" role="alert">
+                {errors.form}
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={errors.email ? "border-red-500" : ""}
+              />
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={errors.password ? "border-red-500" : ""}
+              />
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password}</p>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <Link to="/forgot-password" className="text-sm underline">
+                Forgot password?
+              </Link>
+            </div>
+            <Button type="submit" className="w-full" disabled={!isFormValid}>
+              Login
+            </Button>
+          </form>
+          <div className="mt-4 text-center text-sm">
+            Don't have an account?{" "}
+            <Link to="/signup" className="underline">
+              Sign Up
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       <Modal isOpen={show2FAModal} onClose={() => setShow2FAModal(false)}>
-        <h2>Enter 2FA Code</h2>
-        <input
-          type="text"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          placeholder="123456"
-          maxLength={6}
-          className="w-full h-11 px-3 border rounded"
-          tabIndex={5}
-        />
-        <div className="flex justify-end mt-4">
-          <button
-            onClick={() => {/* resend */}}
-            className="mr-2 px-4 py-2 bg-primary text-white rounded"
-            tabIndex={6}
-          >
-            Resend
-          </button>
-          <button
-            onClick={() => { /* verify otp */ setShow2FAModal(false); navigate('/dashboard'); }}
-            className="px-4 py-2 bg-primary text-white rounded"
-            tabIndex={7}
-          >
-            Verify
-          </button>
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Enter 2FA Code</h2>
+          <Input
+            type="text"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            placeholder="123456"
+            maxLength={6}
+            className="text-center text-lg"
+          />
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => {/* resend */}}>
+              Resend
+            </Button>
+            <Button onClick={() => { /* verify otp */ setShow2FAModal(false); navigate('/dashboard'); }}>
+              Verify
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

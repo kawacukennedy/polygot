@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 
 const ProfilePage: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
@@ -164,16 +170,18 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Profile</h1>
+    <div className="container mx-auto p-6 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-6">Profile</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
-          <div className="bg-surface rounded-lg p-6 text-center">
-            <img
-              src={avatarUrl}
-              alt="Avatar"
-              className="w-40 h-40 rounded-full mx-auto mb-4"
-            />
+        <Card>
+          <CardHeader>
+            <CardTitle>Avatar</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Avatar className="w-32 h-32 mx-auto mb-4">
+              <AvatarImage src={avatarUrl} alt="Avatar" />
+              <AvatarFallback>TU</AvatarFallback>
+            </Avatar>
             <input
               type="file"
               id="avatar-upload"
@@ -182,147 +190,115 @@ const ProfilePage: React.FC = () => {
               disabled={isUploadingAvatar}
               accept="image/jpeg,image/png,image/webp"
             />
-            <label
-              htmlFor="avatar-upload"
-              className="cursor-pointer bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover disabled:bg-gray-400"
-            >
-              {isUploadingAvatar ? 'Uploading...' : 'Upload Avatar'}
-            </label>
-          </div>
-        </div>
-        <div className="md:col-span-2">
-          <div className="bg-surface rounded-lg p-6">
-            <div className="mb-4">
-              <label htmlFor="displayName" className="block text-sm font-medium text-muted mb-1">
-                Display Name
+            <Button asChild disabled={isUploadingAvatar}>
+              <label htmlFor="avatar-upload" className="cursor-pointer">
+                {isUploadingAvatar ? 'Uploading...' : 'Upload Avatar'}
               </label>
-              <input
-                type="text"
+            </Button>
+          </CardContent>
+        </Card>
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Profile Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Display Name</Label>
+              <Input
                 id="displayName"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 maxLength={60}
-                tabIndex={1}
-                className="w-full h-11 px-3 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-focus-ring"
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="bio" className="block text-sm font-medium text-muted mb-1">
-                Bio
-              </label>
-              <textarea
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 maxLength={250}
-                tabIndex={2}
-                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-focus-ring"
                 rows={4}
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-muted mb-1">
-                Email
-              </label>
-              <input
-                type="email"
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
                 id="email"
+                type="email"
                 value={email}
                 readOnly
-                tabIndex={3}
-                className="w-full h-11 px-3 bg-gray-100 border border-gray-300 rounded-md"
               />
             </div>
-            <button
+            <Button
+              variant="link"
+              className="p-0"
               onClick={() => setIsPasswordModalOpen(true)}
-              className="text-primary hover:underline"
             >
               Change Password
-            </button>
-          </div>
-        </div>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
-      <div className="mt-6 text-right">
-        <button
-          onClick={handleSaveChanges}
-          disabled={isSavingProfile}
-          className="bg-success text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400"
-        >
+      <div className="mt-6 flex justify-end">
+        <Button onClick={handleSaveChanges} disabled={isSavingProfile}>
           {isSavingProfile ? 'Saving...' : 'Save Changes'}
-        </button>
+        </Button>
       </div>
 
       <Modal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)}>
-        <div className="p-6">
-          <h2 className="text-xl font-bold mb-4">Change Password</h2>
-          <form onSubmit={handleChangePassword}>
-            {passwordErrors.form && <p className="text-danger text-sm mb-4">{passwordErrors.form}</p>}
-            <div className="mb-4">
-              <label
-                htmlFor="currentPassword"
-                className="block text-sm font-medium text-muted mb-1"
-              >
-                Current Password
-              </label>
-              <input
-                type="password"
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Change Password</h2>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            {passwordErrors.form && (
+              <p className="text-sm text-red-500">{passwordErrors.form}</p>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
                 id="currentPassword"
+                type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                tabIndex={1}
-                className={`w-full h-11 px-3 bg-white border rounded-md focus:outline-none focus:ring-2 focus:ring-focus-ring ${passwordErrors.currentPassword ? 'border-danger' : 'border-gray-300'}`}
+                className={passwordErrors.currentPassword ? "border-red-500" : ""}
               />
-              {passwordErrors.currentPassword && <p className="text-danger text-xs mt-1">{passwordErrors.currentPassword}</p>}
+              {passwordErrors.currentPassword && (
+                <p className="text-sm text-red-500">{passwordErrors.currentPassword}</p>
+              )}
             </div>
-            <div className="mb-4">
-              <label
-                htmlFor="newPassword"
-                className="block text-sm font-medium text-muted mb-1"
-              >
-                New Password
-              </label>
-              <input
-                type="password"
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
                 id="newPassword"
+                type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                tabIndex={2}
-                className={`w-full h-11 px-3 bg-white border rounded-md focus:outline-none focus:ring-2 focus:ring-focus-ring ${passwordErrors.newPassword ? 'border-danger' : 'border-gray-300'}`}
+                className={passwordErrors.newPassword ? "border-red-500" : ""}
               />
-              {passwordErrors.newPassword && <p className="text-danger text-xs mt-1">{passwordErrors.newPassword}</p>}
+              {passwordErrors.newPassword && (
+                <p className="text-sm text-red-500">{passwordErrors.newPassword}</p>
+              )}
             </div>
-            <div className="mb-4">
-              <label
-                htmlFor="confirmNewPassword"
-                className="block text-sm font-medium text-muted mb-1"
-              >
-                Confirm New Password
-              </label>
-              <input
-                type="password"
+            <div className="space-y-2">
+              <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
+              <Input
                 id="confirmNewPassword"
+                type="password"
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
-                tabIndex={3}
-                className={`w-full h-11 px-3 bg-white border rounded-md focus:outline-none focus:ring-2 focus:ring-focus-ring ${passwordErrors.confirmNewPassword ? 'border-danger' : 'border-gray-300'}`}
+                className={passwordErrors.confirmNewPassword ? "border-red-500" : ""}
               />
-              {passwordErrors.confirmNewPassword && <p className="text-danger text-xs mt-1">{passwordErrors.confirmNewPassword}</p>}
+              {passwordErrors.confirmNewPassword && (
+                <p className="text-sm text-red-500">{passwordErrors.confirmNewPassword}</p>
+              )}
             </div>
-            <div className="flex justify-end gap-4">
-              <button
-                type="button"
-                onClick={() => setIsPasswordModalOpen(false)}
-                className="text-muted hover:underline"
-              >
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsPasswordModalOpen(false)}>
                 Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isChangingPassword}
-                className="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-hover disabled:bg-gray-400"
-              >
+              </Button>
+              <Button type="submit" disabled={isChangingPassword}>
                 {isChangingPassword ? 'Changing...' : 'Change Password'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

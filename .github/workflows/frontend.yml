@@ -19,13 +19,21 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./apps/frontend
+       - name: Install dependencies
+         run: npm install
+         working-directory: ./apps/frontend
 
-      - name: Build project
-        run: npm run build
-        working-directory: ./apps/frontend
+       - name: Lint code
+         run: npm run lint
+         working-directory: ./apps/frontend
+
+       - name: Run tests
+         run: npm test -- --watchAll=false --coverage
+         working-directory: ./apps/frontend
+
+       - name: Build project
+         run: npm run build
+         working-directory: ./apps/frontend
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25

@@ -1,32 +1,16 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  CircularProgress,
-  Alert,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { getSnippets, deleteSnippet } from '../services/api';
 import { Snippet } from '../types/Snippet';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useNotification } from '../contexts/NotificationContext';
+import { useToast } from '../contexts/ToastContext';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Alert, AlertDescription } from './ui/alert';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Label } from './ui/label';
+import { Loader2, Edit, Trash2, Play } from 'lucide-react';
 import { io } from 'socket.io-client';
 
 const SnippetsList: React.FC = () => {
@@ -41,7 +25,7 @@ const SnippetsList: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const navigate = useNavigate();
-  const { showNotification } = useNotification();
+  const { addToast } = useToast();
 
   const SNIPPETS_PER_PAGE = 20; // Defined in app_spec
 
@@ -55,22 +39,22 @@ const SnippetsList: React.FC = () => {
         console.log('Connected to WebSocket for snippets');
       });
 
-      socketRef.current.on('snippet_created', (newSnippet: Snippet) => {
-        showNotification(`New snippet created: ${newSnippet.title}`, 'info');
-        setSnippets((prev) => [newSnippet, ...prev]);
-      });
+       socketRef.current.on('snippet_created', (newSnippet: Snippet) => {
+         addToast(`New snippet created: ${newSnippet.title}`, 'info');
+         setSnippets((prev) => [newSnippet, ...prev]);
+       });
 
-      socketRef.current.on('snippet_updated', (updatedSnippet: Snippet) => {
-        showNotification(`Snippet updated: ${updatedSnippet.title}`, 'info');
-        setSnippets((prev) =>
-          prev.map((s) => (s.id === updatedSnippet.id ? updatedSnippet : s))
-        );
-      });
+       socketRef.current.on('snippet_updated', (updatedSnippet: Snippet) => {
+         addToast(`Snippet updated: ${updatedSnippet.title}`, 'info');
+         setSnippets((prev) =>
+           prev.map((s) => (s.id === updatedSnippet.id ? updatedSnippet : s))
+         );
+       });
 
-      socketRef.current.on('snippet_deleted', (deletedSnippetId: string) => {
-        showNotification(`Snippet deleted: ${deletedSnippetId}`, 'info');
-        setSnippets((prev) => prev.filter((s) => s.id !== deletedSnippetId));
-      });
+       socketRef.current.on('snippet_deleted', (deletedSnippetId: string) => {
+         addToast(`Snippet deleted: ${deletedSnippetId}`, 'info');
+         setSnippets((prev) => prev.filter((s) => s.id !== deletedSnippetId));
+       });
 
       socketRef.current.on('disconnect', () => {
         console.log('Disconnected from WebSocket for snippets');
@@ -102,27 +86,20 @@ const SnippetsList: React.FC = () => {
     }
     setError(null);
     try {
-      const response = await getSnippets({
+      const data = await getSnippets({
         ...filters,
         page: pageNum,
         pageSize: SNIPPETS_PER_PAGE,
       });
-      if (response.ok) {
-        const data = await response.json();
-        if (append) {
-          setSnippets((prevSnippets) => [...prevSnippets, ...data]);
-        } else {
-          setSnippets(data);
-        }
-        setHasMore(data.length === SNIPPETS_PER_PAGE);
+      if (append) {
+        setSnippets((prevSnippets) => [...prevSnippets, ...data]);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch snippets');
-        showNotification(errorData.message || 'Failed to fetch snippets', 'error');
+        setSnippets(data);
       }
-    } catch (err) {
-      setError('Network error while fetching snippets');
-      showNotification('Network error while fetching snippets', 'error');
+      setHasMore(data.length === SNIPPETS_PER_PAGE);
+    } catch (err: any) {
+      setError(err.message || 'Network error while fetching snippets');
+      addToast(err.message || 'Network error while fetching snippets', 'error');
     } finally {
       if (pageNum === 1) {
         setLoading(false);
@@ -150,21 +127,15 @@ const SnippetsList: React.FC = () => {
   const handleDelete = useCallback(async (id: string) => {
     if (window.confirm('Are you sure you want to delete this snippet?')) {
       try {
-        const response = await deleteSnippet(id);
-        if (response.ok) {
-          // No need to refetch, WebSocket will handle update
-          showNotification('Snippet deleted successfully!', 'success');
-        } else {
-          const errorData = await response.json();
-          setError(errorData.message || 'Failed to delete snippet');
-          showNotification(errorData.message || 'Failed to delete snippet', 'error');
-        }
-      } catch (err) {
-        setError('Network error while deleting snippet');
-        showNotification('Network error while deleting snippet', 'error');
+        await deleteSnippet(id);
+        // No need to refetch, WebSocket will handle update
+        addToast('Snippet deleted successfully!', 'success');
+      } catch (err: any) {
+        setError(err.message || 'Failed to delete snippet');
+        addToast(err.message || 'Failed to delete snippet', 'error');
       }
     }
-  }, [showNotification]);
+  }, [addToast]);
 
   const handleEdit = useCallback((id: string) => {
     navigate(`/snippets/edit/${id}`);
@@ -172,160 +143,161 @@ const SnippetsList: React.FC = () => {
 
   const handleRun = useCallback((id: string) => {
     console.log(`Running snippet ${id}`);
-    showNotification(`Running snippet ${id} (placeholder)`, 'info');
+    addToast(`Running snippet ${id} (placeholder)`, 'info');
     // Implement run functionality later
-  }, [showNotification]);
+  }, [addToast]);
 
   if (!isAuthenticated) {
     return (
-      <Alert severity="info">Please log in to view your snippets.</Alert>
+      <Alert>
+        <AlertDescription>Please log in to view your snippets.</AlertDescription>
+      </Alert>
     );
   }
 
   if (loading && snippets.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" mt={4}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center mt-4">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error">{error}</Alert>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
   if (snippets.length === 0 && !loading) {
     return (
-      <Paper sx={{ p: 3, mt: 4, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">📄 No snippets yet. Create one!</Typography>
-        <Button variant="contained" sx={{ mt: 2 }} onClick={() => navigate('/snippets/new')}>Create New Snippet</Button>
-      </Paper>
+      <Card className="p-6 mt-4 text-center">
+        <p className="text-lg text-muted-foreground mb-4">📄 No snippets yet. Create one!</p>
+        <Button onClick={() => navigate('/snippets/new')}>Create New Snippet</Button>
+      </Card>
     );
   }
 
   return (
-    <Box>
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box display="flex" gap={2} flexWrap="wrap">
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel id="language-select-label">Language</InputLabel>
-            <Select
-              labelId="language-select-label"
-              id="language-select"
-              value={languageFilter}
-              label="Language"
-              onChange={(e) => setLanguageFilter(e.target.value as string)}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="javascript">JavaScript</MenuItem>
-              <MenuItem value="python">Python</MenuItem>
-              <MenuItem value="java">Java</MenuItem>
-              <MenuItem value="cpp">C++</MenuItem>
-              <MenuItem value="go">Go</MenuItem>
-              <MenuItem value="rust">Rust</MenuItem>
+    <div>
+      <Card className="p-4 mb-6">
+        <div className="flex gap-4 flex-wrap">
+          <div className="space-y-2">
+            <Label htmlFor="language-select">Language</Label>
+            <Select value={languageFilter} onValueChange={setLanguageFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All</SelectItem>
+                <SelectItem value="javascript">JavaScript</SelectItem>
+                <SelectItem value="python">Python</SelectItem>
+                <SelectItem value="java">Java</SelectItem>
+                <SelectItem value="cpp">C++</SelectItem>
+                <SelectItem value="go">Go</SelectItem>
+                <SelectItem value="rust">Rust</SelectItem>
+              </SelectContent>
             </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel id="visibility-select-label">Visibility</InputLabel>
-            <Select
-              labelId="visibility-select-label"
-              id="visibility-select"
-              value={visibilityFilter}
-              label="Visibility"
-              onChange={(e) => setVisibilityFilter(e.target.value as string)}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="public">Public</MenuItem>
-              <MenuItem value="private">Private</MenuItem>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="visibility-select">Visibility</Label>
+            <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+              </SelectContent>
             </Select>
-          </FormControl>
-          <TextField
-            label="Search Title"
-            variant="outlined"
-            value={searchTitleFilter}
-            onChange={(e) => setSearchTitleFilter(e.target.value)}
-            sx={{ minWidth: 200 }}
-          />
-        </Box>
-      </Paper>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="search-title">Search Title</Label>
+            <Input
+              id="search-title"
+              placeholder="Search Title"
+              value={searchTitleFilter}
+              onChange={(e) => setSearchTitleFilter(e.target.value)}
+              className="w-48"
+            />
+          </div>
+        </div>
+      </Card>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="snippets table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Language</TableCell>
-              <TableCell>Visibility</TableCell>
-              <TableCell>Created At</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      <Card>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left p-4">Title</th>
+              <th className="text-left p-4">Language</th>
+              <th className="text-left p-4">Visibility</th>
+              <th className="text-left p-4">Created At</th>
+              <th className="text-right p-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
             {snippets.map((snippet, index) => {
               if (snippets.length === index + 1) {
                 return (
-                  <TableRow ref={lastSnippetElementRef} key={snippet.id}>
-                    <TableCell component="th" scope="row">
-                      {snippet.title}
-                    </TableCell>
-                    <TableCell>{snippet.language}</TableCell>
-                    <TableCell>{snippet.visibility}</TableCell>
-                    <TableCell>{new Date(snippet.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell align="right">
-                      <IconButton aria-label="edit" onClick={() => handleEdit(snippet.id)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton aria-label="delete" onClick={() => handleDelete(snippet.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                      <IconButton aria-label="run" onClick={() => handleRun(snippet.id)}>
-                        <PlayArrowIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
+                  <tr ref={lastSnippetElementRef} key={snippet.id} className="border-b">
+                    <td className="p-4 font-medium">{snippet.title}</td>
+                    <td className="p-4">{snippet.language}</td>
+                    <td className="p-4">{snippet.visibility}</td>
+                    <td className="p-4">{new Date(snippet.created_at).toLocaleDateString()}</td>
+                    <td className="p-4 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(snippet.id)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(snippet.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleRun(snippet.id)}>
+                        <Play className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
                 );
               } else {
                 return (
-                  <TableRow key={snippet.id}>
-                    <TableCell component="th" scope="row">
-                      {snippet.title}
-                    </TableCell>
-                    <TableCell>{snippet.language}</TableCell>
-                    <TableCell>{snippet.visibility}</TableCell>
-                    <TableCell>{new Date(snippet.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell align="right">
-                      <IconButton aria-label="edit" onClick={() => handleEdit(snippet.id)}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton aria-label="delete" onClick={() => handleDelete(snippet.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                      <IconButton aria-label="run" onClick={() => handleRun(snippet.id)}>
-                        <PlayArrowIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
+                  <tr key={snippet.id} className="border-b">
+                    <td className="p-4 font-medium">{snippet.title}</td>
+                    <td className="p-4">{snippet.language}</td>
+                    <td className="p-4">{snippet.visibility}</td>
+                    <td className="p-4">{new Date(snippet.created_at).toLocaleDateString()}</td>
+                    <td className="p-4 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(snippet.id)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(snippet.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleRun(snippet.id)}>
+                        <Play className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
                 );
               }
             })}
             {loadingMore && (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <CircularProgress size={20} />
-                </TableCell>
-              </TableRow>
+              <tr>
+                <td colSpan={5} className="text-center p-4">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+                </td>
+              </tr>
             )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </tbody>
+        </table>
+      </Card>
       {!hasMore && snippets.length > 0 && (
-        <Box sx={{ mt: 3, textAlign: 'center' }}>
-          <Typography variant="subtitle1" color="text.secondary">No more snippets to load.</Typography>
-        </Box>
+        <div className="mt-6 text-center">
+          <p className="text-muted-foreground">No more snippets to load.</p>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 

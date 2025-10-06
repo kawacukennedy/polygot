@@ -119,13 +119,13 @@ const LeaderboardPage: React.FC = () => {
           tabIndex={3}
         />
       </div>
-      {loading ? (
-        <LoadingSkeleton />
-      ) : (
-        {filteredLeaderboard.length === 0 ? (
-          <p className="text-muted">No results — broaden filters</p>
-        ) : (
-          <div className="bg-surface rounded-lg">
+       {loading ? (
+         <LoadingSkeleton />
+       ) : (
+         filteredLeaderboard.length === 0 ? (
+           <p className="text-muted">No results — broaden filters</p>
+         ) : (
+           <div className="bg-surface rounded-lg">
             <table className="w-full" role="table">
               <thead>
                 <tr className="border-b border-gray-200">

@@ -6,7 +6,7 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // Get user profile
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const user = await prisma.user.findUnique({
@@ -14,9 +14,12 @@ router.get('/:id', authenticate, async (req, res) => {
       select: {
         id: true,
         username: true,
-        email: true,
+        displayName: true,
+        bio: true,
+        avatarUrl: true,
         theme: true,
         privacyLevel: true,
+        achievements: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -31,7 +34,19 @@ router.get('/:id', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json(user);
+    res.json({
+      id: user.id,
+      username: user.username,
+      display_name: user.displayName,
+      bio: user.bio,
+      avatar_url: user.avatarUrl,
+      theme: user.theme,
+      privacy_level: user.privacyLevel,
+      achievements: user.achievements,
+      snippets_count: user._count.snippets,
+      created_at: user.createdAt,
+      updated_at: user.updatedAt
+    });
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -42,7 +57,7 @@ router.get('/:id', authenticate, async (req, res) => {
 router.patch('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    const { displayName, bio, theme, privacyLevel } = req.body;
+    const { display_name, bio, theme, privacy_level } = req.body;
 
     // Check if user is updating their own profile
     if (req.user!.userId !== id) {
@@ -52,13 +67,14 @@ router.patch('/:id', authenticate, async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {
-        username: displayName, // Assuming displayName maps to username
+        displayName: display_name,
+        bio,
         theme,
-        privacyLevel
+        privacyLevel: privacy_level
       }
     });
 
-    res.json(updatedUser);
+    res.status(200).json({ message: 'updated' });
   } catch (error) {
     console.error('Update user error:', error);
     res.status(500).json({ message: 'Internal server error' });
