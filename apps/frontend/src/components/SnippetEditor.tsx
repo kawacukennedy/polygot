@@ -111,7 +111,7 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
       const fetchSnippet = async () => {
         setLoading(true);
         try {
-          const data: Snippet = await getSnippetById(id);
+          const data: any = await getSnippetById(id);
           setTitle(data.title);
           setLanguage(data.language);
           setCode(data.code);
@@ -168,7 +168,7 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
     setOpenExecutionDialog(true);
 
     try {
-      const data = await executeCode(language, code);
+      const data: any = await executeCode(language, code);
       setExecutionResult(data.output || 'Execution started...');
     } catch (err) {
       addToast('Network error during code execution.', 'error');

@@ -31,7 +31,7 @@ const HomePage = () => {
       </div>
       <div className="mt-16 w-full max-w-4xl">
         <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">Popular Languages</h2>
-        <BenchmarkChart />
+
       </div>
       <div className="mt-16 w-full max-w-4xl">
         <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">Recent Executions</h2>

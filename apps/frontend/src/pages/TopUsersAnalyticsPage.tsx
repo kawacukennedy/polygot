@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchTopUsers } from '../services/api';
+import { getTopUsers } from '../services/api';
 
 interface TopUser {
   user_id: string;
@@ -32,12 +32,8 @@ const TopUsersAnalyticsPage: React.FC = () => {
       }
 
       try {
-        const analyticsData = await fetchTopUsers(token, selectedLanguage, selectedPeriod);
-        if (analyticsData.status === 'error') {
-          setError(analyticsData.message || 'Failed to fetch top users analytics.');
-        } else {
-          setTopUsers(analyticsData.data);
-        }
+        const analyticsData = await getTopUsers({ language: selectedLanguage, timePeriod: selectedPeriod });
+        setTopUsers(analyticsData);
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred while fetching top users analytics.');
       } finally {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchAdminUsers } from '../services/api';
+import { getUsersAdmin } from '../services/api';
 
 const AdminUsersPage = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -19,12 +19,8 @@ const AdminUsersPage = () => {
       }
 
       try {
-        const data = await fetchAdminUsers(token);
-        if (data.status === 'error') {
-          setError(data.message);
-        } else {
-          setUsers(data);
-        }
+        const data = await getUsersAdmin();
+        setUsers(data);
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred.');
       } finally {

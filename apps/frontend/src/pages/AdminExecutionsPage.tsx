@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchExecutions } from '../services/api'; // Assuming an API function for fetching executions
+import { getExecutionsAdmin } from '../services/api';
 
 interface Execution {
   id: string;
@@ -29,12 +29,8 @@ const AdminExecutionsPage: React.FC = () => {
 
       try {
         // Assuming fetchExecutions is implemented in ../services/api.ts
-        const executionsData = await fetchExecutions(token, page, perPage);
-        if (executionsData.status === 'error') {
-          setError(executionsData.message || 'Failed to fetch executions.');
-        } else {
-          setExecutions(executionsData);
-        }
+        const executionsData = await getExecutionsAdmin();
+        setExecutions(executionsData);
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred while fetching executions.');
       } finally {

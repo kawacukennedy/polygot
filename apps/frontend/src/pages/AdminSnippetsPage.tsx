@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { fetchSnippets } from '../services/api';
+import { getSnippetsAdmin } from '../services/api';
 
 interface Snippet {
   id: string;
@@ -27,12 +27,8 @@ const AdminSnippetsPage: React.FC = () => {
       }
 
       try {
-        const snippetsData = await fetchSnippets(token, undefined, undefined, undefined, page, perPage);
-        if (snippetsData.status === 'error') {
-          setError(snippetsData.message || 'Failed to fetch snippets.');
-        } else {
-          setSnippets(snippetsData);
-        }
+        const snippetsData = await getSnippetsAdmin();
+        setSnippets(snippetsData);
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred while fetching snippets.');
       } finally {

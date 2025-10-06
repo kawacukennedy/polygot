@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { executeSnippet } from '../services/api';
+import { executeCode } from '../services/api';
 
 const ExecuteSnippetPage: React.FC = () => {
   const { id } = useParams<{ id: string }>(); // snippetId
@@ -30,7 +30,7 @@ const ExecuteSnippetPage: React.FC = () => {
     }
 
     try {
-      const response = await executeSnippet(id, input, timeoutMs, token);
+      const response = await executeCode('javascript', input); // Placeholder
 
       if (response.status === 'error') {
         setError(response.message || 'Failed to execute snippet.');

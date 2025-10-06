@@ -220,7 +220,7 @@ const SnippetViewPage: React.FC = () => {
             <span className="font-bold">Language:</span> {snippet.language}
           </div>
           <div className="mb-2">
-            <span className="font-bold">Created At:</span> <time dateTime={snippet.createdAt} title={new Date(snippet.createdAt).toLocaleString()}>{new Date(snippet.createdAt).toRelativeTimeString ? 'relative' : new Date(snippet.createdAt).toLocaleString()}</time>
+            <span className="font-bold">Created At:</span> <time dateTime={snippet.createdAt} title={new Date(snippet.createdAt).toLocaleString()}>{new Date(snippet.createdAt).toLocaleString()}</time>
           </div>
           <button
             onClick={handleRun}

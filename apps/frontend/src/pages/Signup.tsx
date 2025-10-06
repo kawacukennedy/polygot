@@ -46,13 +46,9 @@ const SignupPage: React.FC = () => {
       return;
     }
 
-    const success = await signup(username, email, password);
-    if (success) {
-      showNotification('Signup successful! Please check your email to verify your account.', 'success');
-      setTimeout(() => navigate('/login'), 3000);
-    } else {
-      showNotification('Signup failed. Please try again. (e.g., email already exists)', 'error');
-    }
+    await signup(username, email, password);
+    showNotification('Signup successful! Please check your email to verify your account.', 'success');
+    setTimeout(() => navigate('/login'), 3000);
   };
 
   return (

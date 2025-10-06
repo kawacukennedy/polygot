@@ -54,17 +54,13 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     if (isFormValid) {
       try {
-        const response = await login(email, password);
-        if (response.requires2FA) {
-          setShow2FAModal(true);
-        } else {
-          // Set cookies
-          document.cookie = 'polyglot_access=token; httpOnly; secure; max-age=900';
-          document.cookie = 'polyglot_refresh=refresh; httpOnly; secure; max-age=604800';
-          navigate('/dashboard');
-          // Analytics
-          console.log('login_success', { user_id: 'mock', timestamp: new Date(), ip: 'mock', device: 'mock' });
-        }
+        await login(email, password);
+        // Set cookies
+        document.cookie = 'polyglot_access=token; httpOnly; secure; max-age=900';
+        document.cookie = 'polyglot_refresh=refresh; httpOnly; secure; max-age=604800';
+        navigate('/dashboard');
+        // Analytics
+        console.log('login_success', { user_id: 'mock', timestamp: new Date(), ip: 'mock', device: 'mock' });
       } catch (error: any) {
         if (error.status === 401) {
           setErrors({ ...errors, form: 'Invalid credentials' });

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useTranslation from '../hooks/useTranslation';
-import { register } from '../services/api';
+import { signupUser } from '../services/api';
 
 interface RegisterPageProps {
   showNotification: (message: string, type: 'success' | 'error' | 'info') => void;
@@ -62,7 +62,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ showNotification }) => {
     }
 
     try {
-      const response = await register(email, password, confirmPassword);
+      const response = await signupUser(email, email, password);
 
       if (response.status === 'ok') {
         showNotification(t('registration_successful'), 'success');

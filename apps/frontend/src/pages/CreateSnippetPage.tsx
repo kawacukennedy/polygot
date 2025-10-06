@@ -27,7 +27,7 @@ const CreateSnippetPage: React.FC = () => {
 
     try {
       const snippetData = { title, language, code, visibility };
-      const response = await createSnippet(snippetData, token);
+      const response = await createSnippet(title, language, code, visibility);
 
       if (response.status === 'error') {
         setError(response.message || 'Failed to create snippet.');
