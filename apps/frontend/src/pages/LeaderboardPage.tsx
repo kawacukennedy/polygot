@@ -119,52 +119,50 @@ const LeaderboardPage: React.FC = () => {
           tabIndex={3}
         />
       </div>
-       {loading ? (
-         <LoadingSkeleton />
-       ) : (
-         filteredLeaderboard.length === 0 ? (
-           <p className="text-muted">No results — broaden filters</p>
-         ) : (
-           <div className="bg-surface rounded-lg">
-            <table className="w-full" role="table">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="p-4 text-left">Rank</th>
-                  <th className="p-4 text-left">User</th>
-                  <th className="p-4 text-left">Score</th>
-                  <th className="p-4 text-left">Language</th>
+      {loading ? (
+        <LoadingSkeleton />
+      ) : filteredLeaderboard.length === 0 ? (
+        <p className="text-muted">No results — broaden filters</p>
+      ) : (
+        <div className="bg-surface rounded-lg">
+          <table className="w-full" role="table">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="p-4 text-left">Rank</th>
+                <th className="p-4 text-left">User</th>
+                <th className="p-4 text-left">Score</th>
+                <th className="p-4 text-left">Language</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLeaderboard.map((entry) => (
+                <tr
+                  key={entry.rank}
+                  className={`border-b border-gray-200 ${flashRows.has(entry.rank) ? 'bg-yellow-200 animate-pulse' : ''}`}
+                  style={{ height: '64px' }}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowDown') {
+                      const next = e.currentTarget.nextElementSibling as HTMLElement;
+                      next?.focus();
+                    } else if (e.key === 'ArrowUp') {
+                      const prev = e.currentTarget.previousElementSibling as HTMLElement;
+                      prev?.focus();
+                    }
+                  }}
+                >
+                  <td className="p-4">{entry.rank}</td>
+                  <td className="p-4 flex items-center">
+                    <img src={entry.avatar} alt={entry.user} className="w-10 h-10 rounded-full mr-4" />
+                    {entry.user}
+                  </td>
+                  <td className="p-4">{entry.score}</td>
+                  <td className="p-4">{entry.language}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredLeaderboard.map((entry) => (
-                  <tr
-                    key={entry.rank}
-                    className={`border-b border-gray-200 ${flashRows.has(entry.rank) ? 'bg-yellow-200 animate-pulse' : ''}`}
-                    style={{ height: '64px' }}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'ArrowDown') {
-                        const next = e.currentTarget.nextElementSibling as HTMLElement;
-                        next?.focus();
-                      } else if (e.key === 'ArrowUp') {
-                        const prev = e.currentTarget.previousElementSibling as HTMLElement;
-                        prev?.focus();
-                      }
-                    }}
-                  >
-                    <td className="p-4">{entry.rank}</td>
-                    <td className="p-4 flex items-center">
-                      <img src={entry.avatar} alt={entry.user} className="w-10 h-10 rounded-full mr-4" />
-                      {entry.user}
-                    </td>
-                    <td className="p-4">{entry.score}</td>
-                    <td className="p-4">{entry.language}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

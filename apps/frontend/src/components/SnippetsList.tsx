@@ -64,7 +64,7 @@ const SnippetsList: React.FC = () => {
         socketRef.current?.disconnect();
       };
     }
-  }, [isAuthenticated, showNotification]);
+  }, [isAuthenticated, addToast]);
 
   const observer = useRef<IntersectionObserver>();
   const lastSnippetElementRef = useCallback((node: HTMLTableRowElement) => {
@@ -86,7 +86,7 @@ const SnippetsList: React.FC = () => {
     }
     setError(null);
     try {
-      const data = await getSnippets({
+      const data: any = await getSnippets({
         ...filters,
         page: pageNum,
         pageSize: SNIPPETS_PER_PAGE,

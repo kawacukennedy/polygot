@@ -42,7 +42,7 @@ const HomePage: React.FC = () => {
         setLoadingLanguages(true);
         setErrorLanguages(null);
         try {
-          const data = await getPopularLanguages();
+          const data: any = await getPopularLanguages();
           setPopularLanguages(data);
         } catch (err: any) {
           setErrorLanguages(err.message || 'Failed to fetch popular languages');
@@ -56,7 +56,7 @@ const HomePage: React.FC = () => {
         setLoadingExecutions(true);
         setErrorExecutions(null);
         try {
-          const data = await getRecentExecutions();
+          const data: any = await getRecentExecutions();
           setRecentExecutions(data);
         } catch (err: any) {
           setErrorExecutions(err.message || 'Failed to fetch recent executions');

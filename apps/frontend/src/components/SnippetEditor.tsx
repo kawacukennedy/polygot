@@ -35,7 +35,7 @@ const visibilities = [
   { value: 'private', label: 'Private' }
 ];
 
-const SnippetEditor: React.FC<SnippetEditorProps> = ({ mode }) => {
+const SnippetEditor = ({ mode }: SnippetEditorProps) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -170,7 +170,6 @@ const SnippetEditor: React.FC<SnippetEditorProps> = ({ mode }) => {
     try {
       const data = await executeCode(language, code);
       setExecutionResult(data.output || 'Execution started...');
-      }
     } catch (err) {
       addToast('Network error during code execution.', 'error');
       setExecutionError('Network error during code execution.');

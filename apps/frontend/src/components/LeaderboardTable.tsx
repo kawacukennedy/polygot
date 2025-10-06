@@ -43,13 +43,13 @@ const LeaderboardTable: React.FC = () => {
         socketRef.current?.disconnect();
       };
     }
-  }, [isAuthenticated, showNotification, languageFilter, timePeriodFilter, sortBy]);
+  }, [isAuthenticated, addToast, languageFilter, timePeriodFilter, sortBy]);
 
   const fetchLeaderboard = async (filters: { language?: string; timePeriod?: string; sortBy?: string }) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getTopUsers(filters);
+      const data: any = await getTopUsers(filters);
       // The API should ideally return ranked data, but for now, we map it.
       // If sortBy is 'rank_asc', the API should handle it, or we sort here.
       const mappedData: LeaderboardEntry[] = data.map((item: any, index: number) => ({

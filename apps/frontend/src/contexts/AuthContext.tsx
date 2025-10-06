@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
-      const data = await loginUser(email, password); // loginUser now returns data directly
+      const data: any = await loginUser(email, password); // loginUser now returns data directly
       // Assuming backend sets httpOnly cookies, so no need to manually set them here
       // If backend returns user data, set it
       setUser(data.user || { id: '1', name: 'Logged In User', email: email, role: 'user', status: 'active' });
