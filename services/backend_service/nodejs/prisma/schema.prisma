@@ -1,0 +1,162 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  username          String   @unique @db.VarChar(20)
+  email             String   @unique
+  passwordHash      String
+  role              Role     @default(USER)
+  theme             Theme    @default(LIGHT)
+  privacyLevel      Privacy  @default(PUBLIC)
+  twoFactorEnabled  Boolean  @default(false)
+  twoFactorSecret   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  snippets          Snippet[]
+  executions        Execution[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  leaderboard       Leaderboard?
+
+  @@map("users")
+}
+
+model Snippet {
+  id          String     @id @default(uuid())
+  title       String
+  code        String
+  language    Language
+  visibility  Visibility @default(PRIVATE)
+  ownerId     String
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tags        String[]
+  runsCount   Int        @default(0)
+  likesCount  Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  executions  Execution[]
+  comments    Comment[]
+
+  @@map("snippets")
+}
+
+model Execution {
+  id               String         @id @default(uuid())
+  snippetId        String
+  snippet          Snippet        @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status           ExecutionStatus
+  stdout           String?
+  stderr           String?
+  executionTimeMs  Int?
+  startedAt        DateTime       @default(now())
+  finishedAt       DateTime?
+
+  @@map("executions")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  snippetId  String
+  snippet    Snippet @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User    @relation(fields: [authorId], references: [id])
+  content    String
+  createdAt  DateTime @default(now())
+
+  @@map("comments")
+}
+
+model Achievement {
+  id          String @id @default(uuid())
+  title       String
+  description String
+  criteria    Json
+  points      Int
+
+  @@map("achievements")
+}
+
+model Leaderboard {
+  userId                String @id
+  user                  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score                 Int    @default(0)
+  snippetsShared        Int    @default(0)
+  achievementsUnlocked  Int    @default(0)
+
+  @@map("leaderboard")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id])
+  action    String
+  target    String
+  timestamp DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Theme {
+  LIGHT
+  DARK
+}
+
+enum Privacy {
+  PUBLIC
+  PRIVATE
+}
+
+enum Language {
+  PYTHON
+  JAVASCRIPT
+  JAVA
+  CPP
+  GO
+  RUST
+  RUBY
+  PHP
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  ERROR
+  TIMEOUT
+}
