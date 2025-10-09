@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import { PrismaClient } from '@prisma/client';
 import { trackSignupSuccess, trackLoginSuccess } from '../services/analytics';
 import { validateSignup, sanitizeInput } from '../middleware/security';
+import { awardDailyLogin } from '../services/gamification';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -97,6 +98,9 @@ router.post('/login', async (req, res) => {
 
     // Track login event
     trackLoginSuccess(user.id, req.ip);
+
+    // Award daily login points
+    await awardDailyLogin(user.id);
 
     const token = jwt.sign(
       { userId: user.id, role: user.role },

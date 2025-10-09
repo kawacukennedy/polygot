@@ -9,10 +9,12 @@ const SignUpPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({
     username: '',
     email: '',
     password: '',
+    confirmPassword: '',
     form: '',
   });
   const [isFormValid, setIsFormValid] = useState(false);
@@ -76,11 +78,16 @@ const SignUpPage: React.FC = () => {
 
       // Password validation
       if (password.length > 0) {
-        if (password.length < 8) {
-          newErrors.password = 'Password must be at least 8 characters long.';
+        if (password.length < 12) {
+          newErrors.password = 'Password must be at least 12 characters long.';
         } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])/.test(password)) {
           newErrors.password = 'Password must include uppercase, lowercase, number and special character.';
         }
+      }
+
+      // Confirm password validation
+      if (confirmPassword.length > 0 && password !== confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match.';
       }
 
       setErrors(newErrors);
@@ -88,7 +95,8 @@ const SignUpPage: React.FC = () => {
         Object.values(newErrors).every((error) => error === '') &&
         username.length > 0 &&
         email.length > 0 &&
-        password.length > 0
+        password.length > 0 &&
+        confirmPassword.length > 0
       );
     };
 
@@ -97,7 +105,7 @@ const SignUpPage: React.FC = () => {
     }, 300); // Debounce validation
 
     return () => clearTimeout(debounce);
-  }, [username, email, password]);
+  }, [username, email, password, confirmPassword]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,7 +176,7 @@ const SignUpPage: React.FC = () => {
           />
           {errors.email && <p className="text-danger text-xs mt-1">{errors.email}</p>}
         </div>
-        <div className="mb-4">
+        <div className="mb-3">
           <label
             htmlFor="password"
             className="block text-sm font-medium text-muted mb-1"
@@ -180,13 +188,33 @@ const SignUpPage: React.FC = () => {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="••••••••••••"
             aria-label="password"
             tabIndex={3}
             className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.password ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
             style={{ height: '44px' }}
           />
           {errors.password && <p className="text-danger text-xs mt-1">{errors.password}</p>}
+        </div>
+        <div className="mb-4">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-muted mb-1"
+          >
+            Confirm Password
+          </label>
+          <input
+            type="password"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="••••••••••••"
+            aria-label="confirm password"
+          tabIndex={5}
+            className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.confirmPassword ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
+            style={{ height: '44px' }}
+          />
+          {errors.confirmPassword && <p className="text-danger text-xs mt-1">{errors.confirmPassword}</p>}
         </div>
         <button
           type="submit"

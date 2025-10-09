@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
-
 require 'json'
-require 'timeout'
 require 'tempfile'
+require 'timeout'
 
 def execute_code(code)
   begin
@@ -15,7 +14,7 @@ def execute_code(code)
       temp_file.close
 
       # Execute the code
-      result = `ruby #{temp_file.path} 2>&1`
+      output = `ruby #{temp_file.path} 2>&1`
       exit_code = $?.exitstatus
 
       end_time = Time.now.to_f * 1000
@@ -26,8 +25,8 @@ def execute_code(code)
 
       {
         success: exit_code == 0,
-        stdout: exit_code == 0 ? result : '',
-        stderr: exit_code != 0 ? result : '',
+        stdout: exit_code == 0 ? output : '',
+        stderr: exit_code != 0 ? output : '',
         execution_time: execution_time
       }
     end
@@ -51,6 +50,4 @@ end
 # Read code from stdin
 code = STDIN.read
 result = execute_code(code)
-
-# Output result as JSON
 puts JSON.generate(result)

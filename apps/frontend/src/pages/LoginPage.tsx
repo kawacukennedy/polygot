@@ -54,13 +54,14 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     if (isFormValid) {
       try {
-        await login(email, password);
-        // Set cookies
-        document.cookie = 'polyglot_access=token; httpOnly; secure; max-age=900';
-        document.cookie = 'polyglot_refresh=refresh; httpOnly; secure; max-age=604800';
-        navigate('/dashboard');
-        // Analytics
-        console.log('login_success', { user_id: 'mock', timestamp: new Date(), ip: 'mock', device: 'mock' });
+        const result = await login(email, password);
+        if (result.twoFactorRequired) {
+          setShow2FAModal(true);
+        } else {
+          navigate('/dashboard');
+          // Analytics
+          console.log('login_success', { user_id: 'mock', timestamp: new Date(), ip: 'mock', device: 'mock' });
+        }
       } catch (error: any) {
         if (error.status === 401) {
           setErrors({ ...errors, form: 'Invalid credentials' });
@@ -149,7 +150,11 @@ const LoginPage: React.FC = () => {
             <Button variant="outline" onClick={() => {/* resend */}}>
               Resend
             </Button>
-            <Button onClick={() => { /* verify otp */ setShow2FAModal(false); navigate('/dashboard'); }}>
+            <Button onClick={async () => {
+              // TODO: Call 2FA verify API
+              setShow2FAModal(false);
+              navigate('/dashboard');
+            }}>
               Verify
             </Button>
           </div>

@@ -57,10 +57,10 @@ export const getSnippets = async (filters?: { language?: string; visibility?: st
   });
 };
 
-export const createSnippet = async (title: string, language: string, code: string, visibility: 'public' | 'private'): Promise<any> => {
+export const createSnippet = async (title: string, language: string, code: string, visibility: 'public' | 'private', tags?: string[]): Promise<any> => {
   return apiCall('/snippets', {
     method: 'POST',
-    body: JSON.stringify({ title, language, code, visibility }),
+    body: JSON.stringify({ title, language, code, visibility, tags }),
   });
 };
 
@@ -70,10 +70,10 @@ export const getSnippetById = async (id: string): Promise<any> => {
   });
 };
 
-export const updateSnippet = async (id: string, title: string, language: string, code: string, visibility: 'public' | 'private'): Promise<any> => {
+export const updateSnippet = async (id: string, title: string, language: string, code: string, visibility: 'public' | 'private', tags?: string[]): Promise<any> => {
   return apiCall(`/snippets/${id}`, {
     method: 'PUT',
-    body: JSON.stringify({ title, language, code, visibility }),
+    body: JSON.stringify({ title, language, code, visibility, tags }),
   });
 };
 

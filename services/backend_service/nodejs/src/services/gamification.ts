@@ -42,15 +42,36 @@ export const awardPoints = async (userId: string, action: keyof typeof POINTS_CO
     where: { userId },
     create: {
       userId,
-      score: points
+      score: points,
+      snippetsShared: action === 'snippet_shared' ? 1 : 0,
+      achievementsUnlocked: action === 'achievement_unlocked' ? 1 : 0
     },
     update: {
-      score: { increment: points }
+      score: { increment: points },
+      ...(action === 'snippet_shared' && { snippetsShared: { increment: 1 } }),
+      ...(action === 'achievement_unlocked' && { achievementsUnlocked: { increment: 1 } })
     }
   });
 
   // Check for achievements
   await checkAchievements(userId);
+};
+
+export const awardDailyLogin = async (userId: string) => {
+  // Check if user already logged in today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastLogin = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { updatedAt: true }
+  });
+
+  if (lastLogin && lastLogin.updatedAt >= today) {
+    return; // Already awarded today
+  }
+
+  await awardPoints(userId, 'daily_login');
 };
 
 export const checkAchievements = async (userId: string) => {

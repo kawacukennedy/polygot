@@ -6,7 +6,7 @@ import { loginUser, signupUser } from '../services/api'; // Import API functions
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ twoFactorRequired: boolean }>;
   signup: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void; // Add setUser to AuthContextType
@@ -28,13 +28,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<void> => {
+  const login = async (email: string, password: string): Promise<{ twoFactorRequired: boolean }> => {
     try {
       const data: any = await loginUser(email, password); // loginUser now returns data directly
+      if (data.twoFactorRequired) {
+        return { twoFactorRequired: true };
+      }
       // Assuming backend sets httpOnly cookies, so no need to manually set them here
       // If backend returns user data, set it
       setUser(data.user || { id: '1', name: 'Logged In User', email: email, role: 'user', status: 'active' });
       setIsAuthenticated(true);
+      return { twoFactorRequired: false };
     } catch (error) {
       throw error; // Re-throw the error from apiCall
     }

@@ -45,6 +45,7 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
   const [language, setLanguage] = useState(languages[0].value);
   const [code, setCode] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
+  const [tags, setTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -65,7 +66,7 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
     const autoSaveTimer = setTimeout(() => {
       console.log('Autosaving snippet...');
       handleSubmit(); // Call save function
-    }, 5000); // Autosave every 5 seconds of inactivity
+    }, 30000); // Autosave every 30 seconds of inactivity
 
     return () => clearTimeout(autoSaveTimer);
   }, [title, language, code, visibility, isDirty, isAuthenticated, loading, executing]);
@@ -75,6 +76,8 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
     setter(value);
     setIsDirty(true);
   }, []);
+
+
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
@@ -116,6 +119,7 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
           setLanguage(data.language);
           setCode(data.code);
           setVisibility(data.visibility.toLowerCase() as 'public' | 'private');
+          setTags(data.tags || []);
           initialSnippetRef.current = data;
           setIsDirty(false);
         } catch (err) {
@@ -146,9 +150,9 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
     setLoading(true);
     try {
       if (id) {
-        await updateSnippet(id, title, language, code, visibility);
+        await updateSnippet(id, title, language, code, visibility, tags);
       } else {
-        await createSnippet(title, language, code, visibility);
+        await createSnippet(title, language, code, visibility, tags);
       }
 
       addToast(`Snippet ${id ? 'updated' : 'created'} successfully!`, 'success');
@@ -187,6 +191,27 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
     setExecutionError(null);
     setRealtimeLog([]);
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'Enter':
+            e.preventDefault();
+            if (!loading && !executing) handleRun();
+            break;
+          case 's':
+            e.preventDefault();
+            if (!loading && isDirty) handleSubmit();
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [loading, executing, isDirty]);
 
   if (!isAuthenticated) {
     return (
@@ -272,10 +297,20 @@ const SnippetEditor = ({ mode }: SnippetEditorProps) => {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+           </div>
 
-          <div className="space-y-2">
-            <Label>Code</Label>
+           <div className="space-y-2">
+             <Label htmlFor="tags">Tags (comma-separated)</Label>
+             <Input
+               id="tags"
+               placeholder="javascript, web, utility"
+               value={tags.join(', ')}
+               onChange={(e) => setTags(e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0))}
+             />
+           </div>
+
+           <div className="space-y-2">
+             <Label>Code</Label>
             <div className="border rounded-md h-96">
               <Editor
                 height="100%"
