@@ -134,6 +134,53 @@ export const getUser = async (id: string): Promise<any> => {
   });
 };
 
+// Search API functions
+export const searchSnippets = async (params: {
+  q?: string;
+  language?: string;
+  visibility?: string;
+  author?: string;
+  tags?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  page?: number;
+  limit?: number;
+  dateFrom?: string;
+  dateTo?: string;
+}): Promise<any> => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, value.toString());
+    }
+  });
+
+  const url = `/search/snippets?${searchParams.toString()}`;
+  return apiCall(url, {
+    method: 'GET',
+  });
+};
+
+export const getPopularTags = async (limit?: number): Promise<any> => {
+  const params = new URLSearchParams();
+  if (limit) params.append('limit', limit.toString());
+
+  return apiCall(`/search/popular-tags?${params.toString()}`, {
+    method: 'GET',
+  });
+};
+
+export const searchUsers = async (q: string, page?: number, limit?: number): Promise<any> => {
+  const params = new URLSearchParams();
+  params.append('q', q);
+  if (page) params.append('page', page.toString());
+  if (limit) params.append('limit', limit.toString());
+
+  return apiCall(`/search/users?${params.toString()}`, {
+    method: 'GET',
+  });
+};
+
 // Comment API functions
 export const getComments = async (snippetId: string, page?: number, limit?: number): Promise<any> => {
   const params = new URLSearchParams();
