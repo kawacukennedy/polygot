@@ -124,15 +124,24 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                   >
                     Profile
                   </Link>
-                  <Link
-                    to="/settings"
-                    className="block px-4 py-2 text-muted hover:bg-gray-100"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                    tabIndex={52}
-                    role="menuitem"
-                  >
-                    Settings
-                  </Link>
+                   <Link
+                     to="/privacy"
+                     className="block px-4 py-2 text-muted hover:bg-gray-100"
+                     onClick={() => setIsProfileMenuOpen(false)}
+                     tabIndex={52}
+                     role="menuitem"
+                   >
+                     Privacy & Data
+                   </Link>
+                   <Link
+                     to="/settings"
+                     className="block px-4 py-2 text-muted hover:bg-gray-100"
+                     onClick={() => setIsProfileMenuOpen(false)}
+                     tabIndex={53}
+                     role="menuitem"
+                   >
+                     Settings
+                   </Link>
                   <button
                     onClick={handleLogout}
                     className="block w-full text-left px-4 py-2 text-muted hover:bg-gray-100"

@@ -20,6 +20,7 @@ import SearchPage from './pages/SearchPage';
 import MySnippetsPage from './pages/MySnippetsPage';
 import ExecutionsPage from './pages/ExecutionsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import PrivacyPage from './pages/PrivacyPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -94,9 +95,10 @@ function App() {
              <Route path="/search" element={<SearchPage />} />
              <Route path="/my-snippets" element={<MySnippetsPage />} />
              <Route path="/executions" element={<ExecutionsPage />} />
-             <Route path="/analytics" element={<AnalyticsPage />} />
-             {/* Redirect to dashboard for root path */}
-             <Route path="/" element={<DashboardPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+
+              <Route path="/" element={<DashboardPage />} />
            </Routes>
         </main>
       </div>

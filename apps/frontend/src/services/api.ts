@@ -328,6 +328,26 @@ export const getRecentActivity = async (limit?: number): Promise<any> => {
   });
 };
 
+// GDPR API functions
+export const exportUserData = async (): Promise<any> => {
+  return apiCall('/gdpr/export-data', {
+    method: 'GET',
+  });
+};
+
+export const deleteUserAccount = async (confirmation: string): Promise<any> => {
+  return apiCall('/gdpr/delete-account', {
+    method: 'DELETE',
+    body: JSON.stringify({ confirmation }),
+  });
+};
+
+export const getDataProcessingInfo = async (): Promise<any> => {
+  return apiCall('/gdpr/data-processing-info', {
+    method: 'GET',
+  });
+};
+
 export const getSystemHealthMetrics = async (): Promise<any> => {
   // Placeholder for fetching system health metrics
   return {
