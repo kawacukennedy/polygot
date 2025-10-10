@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { getExecutionsAdmin } from '../services/api';
+import { getExecutionsAdmin, rerunExecutionAdmin, killExecutionAdmin } from '../services/api';
 
 interface Execution {
   id: string;
@@ -41,14 +41,28 @@ const AdminExecutionsPage: React.FC = () => {
     getExecutions();
   }, [page, perPage]);
 
-  const handleReRun = (executionId: string) => {
-    console.log(`Re-run execution ${executionId}`);
-    // TODO: Implement API call to re-run execution
+  const handleReRun = async (executionId: string) => {
+    try {
+      await rerunExecutionAdmin(executionId);
+      // Refresh the executions list
+      const executionsData = await getExecutionsAdmin();
+      setExecutions(executionsData);
+      alert('Execution re-run initiated successfully');
+    } catch (error: any) {
+      alert(`Failed to re-run execution: ${error.message}`);
+    }
   };
 
-  const handleKill = (executionId: string) => {
-    console.log(`Kill execution ${executionId}`);
-    // TODO: Implement API call to kill execution
+  const handleKill = async (executionId: string) => {
+    try {
+      await killExecutionAdmin(executionId);
+      // Refresh the executions list
+      const executionsData = await getExecutionsAdmin();
+      setExecutions(executionsData);
+      alert('Execution killed successfully');
+    } catch (error: any) {
+      alert(`Failed to kill execution: ${error.message}`);
+    }
   };
 
   if (loading) {

@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import { trackSignupSuccess, trackLoginSuccess } from '../services/analytics';
 import { validateSignup, sanitizeInput } from '../middleware/security';
 import { awardDailyLogin } from '../services/gamification';
+import logger from '../utils/logger';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -76,7 +77,7 @@ router.post('/signup', authLimiter, sanitizeInput, validateSignup, async (req, r
       }
     });
   } catch (error) {
-    console.error('Signup error:', error);
+    logger.error({ error, userId: user?.id }, 'Signup error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -120,7 +121,7 @@ router.post('/login', async (req, res) => {
       twoFactorRequired: user.twoFactorEnabled
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error({ error, email }, 'Login error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -154,7 +155,7 @@ router.post('/2fa/verify', async (req, res) => {
 
     res.json({ message: '2FA verified successfully' });
   } catch (error) {
-    console.error('2FA verify error:', error);
+    logger.error({ error, userId: decoded?.userId }, '2FA verify error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });

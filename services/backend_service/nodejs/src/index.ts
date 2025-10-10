@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -5,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
+import logger from './utils/logger';
 
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
@@ -15,7 +18,26 @@ import adminRoutes from './routes/admin';
 
 dotenv.config();
 
+// Initialize Sentry
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    // Add profiling integration
+    nodeProfilingIntegration(),
+  ],
+  // Performance Monitoring
+  tracesSampleRate: 1.0, // Capture 100% of the transactions
+  // Set sampling rate for profiling - this is relative to tracesSampleRate
+  profilesSampleRate: 1.0,
+});
+
 const app = express();
+
+// The request handler must be the first middleware on the app
+app.use(Sentry.expressIntegration());
+
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.tracingHandler());
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
@@ -50,14 +72,25 @@ app.get('/health', (req, res) => {
 
 // Socket.io for real-time updates
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  logger.info({ socketId: socket.id }, 'User connected');
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    logger.info({ socketId: socket.id }, 'User disconnected');
   });
+});
+
+// The error handler must be registered before any other error middleware and after all controllers
+app.use(Sentry.expressErrorHandler());
+
+// Optional fallthrough error handler
+app.use(function onError(err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
+  // The error id is attached to `res.sentry` to be returned
+  // and optionally displayed to the user for support.
+  res.statusCode = 500;
+  res.end(res.sentry + '\n');
 });
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info({ port: PORT }, 'Server running');
 });

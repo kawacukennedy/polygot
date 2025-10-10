@@ -162,39 +162,36 @@ export const deleteUserAdmin = async (userId: string): Promise<any> => {
 };
 
 export const getSnippetsAdmin = async (): Promise<any[]> => {
-  // Placeholder for fetching all snippets for admin panel
-  return [
-    { id: 'snip1', title: 'Admin Snippet 1', language: 'python', visibility: 'public' },
-    { id: 'snip2', title: 'Admin Snippet 2', language: 'javascript', visibility: 'private' },
-  ];
+  return apiCall('/admin/snippets');
 };
 
 export const deleteSnippetAdmin = async (snippetId: string): Promise<any> => {
-  console.log(`Admin: Deleting snippet ${snippetId}`);
-  return { ok: true }; // Simulate success
+  return apiCall(`/admin/snippets/${snippetId}`, {
+    method: 'DELETE'
+  });
 };
 
 export const flagSnippetAdmin = async (snippetId: string): Promise<any> => {
+  // For now, flagging could be implemented as a PATCH to update a flagged status
+  // Since the backend doesn't have this endpoint yet, we'll leave it as a placeholder
   console.log(`Admin: Flagging snippet ${snippetId}`);
-  return { ok: true }; // Simulate success
+  return { ok: true }; // Placeholder
 };
 
 export const getExecutionsAdmin = async (): Promise<any[]> => {
-  // Placeholder for fetching all executions for admin panel
-  return [
-    { id: 'exec1', snippet_id: 'snip1', status: 'success', runtime: 'python', duration: 120 },
-    { id: 'exec2', snippet_id: 'snip2', status: 'failed', runtime: 'javascript', duration: 200 },
-  ];
+  return apiCall('/admin/executions');
 };
 
 export const rerunExecutionAdmin = async (executionId: string): Promise<any> => {
-  console.log(`Admin: Re-running execution ${executionId}`);
-  return { ok: true }; // Simulate success
+  return apiCall(`/admin/executions/${executionId}/rerun`, {
+    method: 'POST'
+  });
 };
 
 export const killExecutionAdmin = async (executionId: string): Promise<any> => {
-  console.log(`Admin: Killing execution ${executionId}`);
-  return { ok: true }; // Simulate success
+  return apiCall(`/admin/executions/${executionId}/kill`, {
+    method: 'POST'
+  });
 };
 
 export const getSystemHealthMetrics = async (): Promise<any> => {

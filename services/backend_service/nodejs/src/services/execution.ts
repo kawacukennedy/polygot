@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import logger from '../utils/logger';
 
 const execAsync = promisify(exec);
 
@@ -23,6 +24,7 @@ const languageImages = {
 
 export const executeCode = async (code: string, language: string): Promise<ExecutionResult> => {
   const startTime = Date.now();
+  logger.info({ language, codeLength: code.length }, 'Starting code execution');
 
   try {
     const image = languageImages[language as keyof typeof languageImages];
@@ -46,6 +48,7 @@ export const executeCode = async (code: string, language: string): Promise<Execu
 
     // Parse JSON output from container
     const result = JSON.parse(stdout.trim());
+    logger.info({ language, success: result.success, executionTime: result.execution_time }, 'Code execution completed');
 
     return {
       success: result.success,
@@ -55,7 +58,10 @@ export const executeCode = async (code: string, language: string): Promise<Execu
     };
   } catch (error: unknown) {
     const executionTime = Date.now() - startTime;
-    if (error.message.includes('timeout')) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error({ language, error: errorMessage, executionTime }, 'Code execution failed');
+
+    if (errorMessage.includes('timeout')) {
       return {
         success: false,
         stdout: '',
@@ -66,7 +72,7 @@ export const executeCode = async (code: string, language: string): Promise<Execu
     return {
       success: false,
       stdout: '',
-      stderr: error.message,
+      stderr: errorMessage,
       executionTime
     };
   }

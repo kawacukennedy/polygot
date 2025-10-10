@@ -5,6 +5,7 @@ import { executeCode } from '../services/execution';
 import { awardPoints } from '../services/gamification';
 import { trackSnippetRun } from '../services/analytics';
 import { validateSnippet, sanitizeInput } from '../middleware/security';
+import logger from '../utils/logger';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -30,7 +31,7 @@ router.post('/', authenticate, sanitizeInput, validateSnippet, async (req, res) 
 
     res.status(201).json(snippet);
   } catch (error) {
-    console.error('Create snippet error:', error);
+    logger.error({ error, userId: req.user!.userId }, 'Create snippet error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -63,7 +64,7 @@ router.get('/:id', async (req, res) => {
 
     res.json(snippet);
   } catch (error) {
-    console.error('Get snippet error:', error);
+    logger.error({ error, snippetId: id }, 'Get snippet error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -135,7 +136,7 @@ router.post('/:id/run', authenticate, async (req, res) => {
 
     res.status(202).json({ executionId: execution.id });
   } catch (error) {
-    console.error('Run snippet error:', error);
+    logger.error({ error, snippetId: id, userId: req.user!.userId }, 'Run snippet error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });

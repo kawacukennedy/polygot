@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { getSnippetsAdmin } from '../services/api';
+import { getSnippetsAdmin, deleteSnippetAdmin, flagSnippetAdmin } from '../services/api';
 
 interface Snippet {
   id: string;
@@ -39,17 +39,27 @@ const AdminSnippetsPage: React.FC = () => {
     getSnippets();
   }, [page, perPage]);
 
-  const handleDeleteSnippet = (snippetId: string) => {
+  const handleDeleteSnippet = async (snippetId: string) => {
     if (window.confirm(`Are you sure you want to delete snippet ${snippetId}?`)) {
-      console.log(`Delete snippet ${snippetId}`);
-      // TODO: Implement API call to delete snippet
-      setSnippets(prevSnippets => prevSnippets.filter(snippet => snippet.id !== snippetId));
+      try {
+        await deleteSnippetAdmin(snippetId);
+        // Refresh the snippets list
+        const snippetsData = await getSnippetsAdmin();
+        setSnippets(snippetsData);
+        alert('Snippet deleted successfully');
+      } catch (error: any) {
+        alert(`Failed to delete snippet: ${error.message}`);
+      }
     }
   };
 
-  const handleFlagSnippet = (snippetId: string) => {
-    console.log(`Flag snippet ${snippetId}`);
-    // TODO: Implement API call to flag snippet
+  const handleFlagSnippet = async (snippetId: string) => {
+    try {
+      await flagSnippetAdmin(snippetId);
+      alert('Snippet flagged successfully');
+    } catch (error: any) {
+      alert(`Failed to flag snippet: ${error.message}`);
+    }
   };
 
   if (loading) {
