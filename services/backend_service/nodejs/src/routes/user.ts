@@ -64,7 +64,7 @@ router.patch('/:id', authenticate, async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id },
       data: {
         displayName: display_name,

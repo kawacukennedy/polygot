@@ -135,7 +135,7 @@ router.post('/2fa/verify', async (req, res) => {
       return res.status(401).json({ message: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
 
     if (!user || !user.twoFactorSecret) {

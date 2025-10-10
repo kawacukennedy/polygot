@@ -37,7 +37,7 @@ export const executeCode = async (code: string, language: string): Promise<Execu
     const command = `echo '${escapedCode}' | docker run --rm -i --memory=128m --cpus=0.5 --network=none --read-only --tmpfs /tmp --tmpfs /app -e HOME=/tmp ${image}`;
 
     // Execute with timeout
-    const { stdout, stderr } = await Promise.race([
+    const { stdout } = await Promise.race([
       execAsync(command, { timeout: 35000 }), // Slightly more than 30s for container startup
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Execution timeout')), 35000)
@@ -53,7 +53,7 @@ export const executeCode = async (code: string, language: string): Promise<Execu
       stderr: result.stderr,
       executionTime: result.execution_time
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     const executionTime = Date.now() - startTime;
     if (error.message.includes('timeout')) {
       return {

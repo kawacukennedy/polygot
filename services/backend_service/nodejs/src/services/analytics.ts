@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+// import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 interface AnalyticsEvent {
   event: string;
@@ -56,7 +56,7 @@ export const trackSnippetRun = (
   });
 };
 
-export const trackAchievementUnlocked = (userId: string, achievementId: string) => {
+export const trackAchievementUnlocked = (userId: string) => {
   trackEvent({
     event: 'achievement_unlocked',
     userId,

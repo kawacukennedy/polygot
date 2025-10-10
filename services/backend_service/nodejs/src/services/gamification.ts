@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 interface AchievementCriteria {
   id: string;
-  criteria: any;
+  criteria: Record<string, unknown>;
   points: number;
 }
 

@@ -7,9 +7,9 @@ const prisma = new PrismaClient();
 // Get leaderboard
 router.get('/', async (req, res) => {
   try {
-    const { language, timeFrame } = req.query;
+    const { language } = req.query;
 
-    let where: any = {};
+    const where: Record<string, unknown> = {};
     if (language) {
       where.snippets = {
         some: {

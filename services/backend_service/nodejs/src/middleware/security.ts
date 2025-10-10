@@ -5,12 +5,12 @@ import { JSDOM } from 'jsdom';
 
 // Create a DOMPurify instance
 const window = new JSDOM('').window;
-const DOMPurifyInstance = DOMPurify(window as any);
+const DOMPurifyInstance = DOMPurify(window as unknown as Window);
 
 // XSS sanitization middleware
 export const sanitizeInput = (req: Request, res: Response, next: NextFunction) => {
   // Sanitize string fields in body
-  const sanitizeObject = (obj: any) => {
+  const sanitizeObject = (obj: Record<string, unknown>) => {
     for (const key in obj) {
       if (typeof obj[key] === 'string') {
         obj[key] = DOMPurifyInstance.sanitize(obj[key]);
