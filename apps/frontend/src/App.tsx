@@ -18,7 +18,8 @@ import WelcomePage from './pages/WelcomePage';
 import SearchPage from './pages/SearchPage';
 import MySnippetsPage from './pages/MySnippetsPage';
 import ExecutionsPage from './pages/ExecutionsPage';
-import AnalyticsPage from './pages/AnalyticsPage'; // Import AnalyticsPage
+import AnalyticsPage from './pages/AnalyticsPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 // Import components
 import Header from './components/Header';
@@ -71,26 +72,27 @@ function App() {
       <div className="flex flex-1">
         <Sidebar mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
         <main id="main" className="flex-1 p-6" tabIndex={-1}>
-          <Routes>
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/snippets/new" element={<SnippetEditorPage />} />
-            <Route path="/snippets/:id/edit" element={<SnippetEditorPage />} />
-            <Route path="/snippets/:id" element={<SnippetViewPage />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/admin" element={<AdminPanelPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/welcome" element={<WelcomePage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/my-snippets" element={<MySnippetsPage />} />
-            <Route path="/executions" element={<ExecutionsPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} /> {/* Add route for AnalyticsPage */}
-            {/* Redirect to dashboard for root path */}
-            <Route path="/" element={<DashboardPage />} />
-          </Routes>
+           <Routes>
+             <Route path="/signup" element={<SignUpPage />} />
+             <Route path="/login" element={<LoginPage />} />
+             <Route path="/verify-email" element={<VerifyEmailPage />} />
+             <Route path="/dashboard" element={<DashboardPage />} />
+             <Route path="/snippets/new" element={<SnippetEditorPage />} />
+             <Route path="/snippets/:id/edit" element={<SnippetEditorPage />} />
+             <Route path="/snippets/:id" element={<SnippetViewPage />} />
+             <Route path="/leaderboard" element={<LeaderboardPage />} />
+             <Route path="/profile" element={<ProfilePage />} />
+             <Route path="/admin" element={<AdminPanelPage />} />
+             <Route path="/notifications" element={<NotificationsPage />} />
+             <Route path="/settings" element={<SettingsPage />} />
+             <Route path="/welcome" element={<WelcomePage />} />
+             <Route path="/search" element={<SearchPage />} />
+             <Route path="/my-snippets" element={<MySnippetsPage />} />
+             <Route path="/executions" element={<ExecutionsPage />} />
+             <Route path="/analytics" element={<AnalyticsPage />} />
+             {/* Redirect to dashboard for root path */}
+             <Route path="/" element={<DashboardPage />} />
+           </Routes>
         </main>
       </div>
     </div>

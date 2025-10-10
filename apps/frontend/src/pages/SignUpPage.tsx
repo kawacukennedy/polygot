@@ -114,7 +114,7 @@ const SignUpPage: React.FC = () => {
         await signup(username, email, password);
         // Analytics event
         console.log('signup_success', { user_id: 'mock', timestamp: new Date() });
-        addToast('Account created! Check your email to verify', 'success');
+        addToast('Account created! Check your email to verify your account.', 'success');
         setShowVerificationModal(true);
       } catch (error: any) {
         if (error.status === 400) {
@@ -230,23 +230,33 @@ const SignUpPage: React.FC = () => {
         By creating an account you agree to our Terms and Privacy Policy
       </p>
 
-      <Modal isOpen={showVerificationModal} onClose={() => { setShowVerificationModal(false); navigate('/welcome'); }}>
+      <Modal isOpen={showVerificationModal} onClose={() => { setShowVerificationModal(false); navigate('/login'); }}>
         <h2 id="verify_headline">Verify your email</h2>
-        <p>We sent a verification link to your email. It will expire in 15 minutes.</p>
-        <div className="flex justify-end mt-4">
+        <p>We sent a verification link to <strong>{email}</strong>. Please check your email and click the link to activate your account. The link will expire in 15 minutes.</p>
+        <div className="flex justify-end mt-4 space-x-2">
           <button
-            onClick={() => {/* resend */}}
-            className="mr-2 px-4 py-2 bg-primary text-white rounded"
+            onClick={async () => {
+              try {
+                await apiCall('/auth/resend-verification', {
+                  method: 'POST',
+                  body: JSON.stringify({ email })
+                });
+                addToast('Verification email resent!', 'success');
+              } catch (error: any) {
+                addToast('Failed to resend email', 'error');
+              }
+            }}
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
             tabIndex={1}
           >
-            Resend
+            Resend Email
           </button>
           <button
-            onClick={() => { setShowVerificationModal(false); navigate('/welcome'); }}
-            className="px-4 py-2 bg-gray-300 rounded"
+            onClick={() => { setShowVerificationModal(false); navigate('/login'); }}
+            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
             tabIndex={2}
           >
-            Close
+            Go to Login
           </button>
         </div>
       </Modal>
