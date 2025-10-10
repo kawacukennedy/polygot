@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -36,6 +37,7 @@ interface PopularTag {
 const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { addToast } = useToast();
+  const { t } = useTranslation();
 
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [language, setLanguage] = useState(searchParams.get('language') || '');
@@ -150,7 +152,7 @@ const SearchPage: React.FC = () => {
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-6">Search Snippets</h1>
+        <h1 className="text-3xl font-bold mb-6">{t('search.title')}</h1>
 
         {/* Search Form */}
         <Card className="mb-6">
@@ -163,7 +165,7 @@ const SearchPage: React.FC = () => {
                     id="query"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search in title, code, tags..."
+                    placeholder={t('search.placeholder')}
                   />
                 </div>
 
@@ -251,7 +253,7 @@ const SearchPage: React.FC = () => {
         {popularTags.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Popular Tags</CardTitle>
+              <CardTitle>{t('search.popularTags')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">

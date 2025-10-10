@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Alert, AlertDescription } from './components/ui/alert';
 import { Button } from './components/ui/button';
+import './i18n'; // Initialize i18n
 
 // Import pages
 import SignUpPage from './pages/SignUpPage';

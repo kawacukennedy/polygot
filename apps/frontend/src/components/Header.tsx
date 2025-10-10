@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from './LanguageSelector';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -12,6 +14,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
+  const { t } = useTranslation();
 
   // Debounce search query
   useEffect(() => {
@@ -52,29 +55,32 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         </Link>
         <nav id="nav" className="hidden md:flex ml-5 space-x-5" role="navigation" aria-label="Main navigation">
           <Link to="/" className="text-muted hover:text-primary" tabIndex={10}>
-            Home
+            {t('nav.home')}
           </Link>
           <Link to="/my-snippets" className="text-muted hover:text-primary" tabIndex={11}>
-            Snippets
+            {t('nav.create')}
           </Link>
           <Link to="/leaderboard" className="text-muted hover:text-primary" tabIndex={12}>
             Leaderboard
           </Link>
           <Link to="/profile" className="text-muted hover:text-primary" tabIndex={13}>
-            Profile
+            {t('nav.profile')}
           </Link>
         </nav>
       </div>
       <div className="flex-1"></div>
+      <div className="flex items-center mr-4">
+        <LanguageSelector />
+      </div>
       <div className="flex items-center" style={{ width: '360px' }}>
         <form onSubmit={handleSearch} className="relative">
           <input
             type="text"
-            placeholder="Search snippets, users..."
+            placeholder={t('common.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-11 px-3 rounded-md bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            aria-label="Search"
+            aria-label={t('common.search')}
             style={{ width: '360px' }}
           />
           <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted">
