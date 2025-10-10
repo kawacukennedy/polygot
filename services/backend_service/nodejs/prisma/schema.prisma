@@ -37,6 +37,7 @@ model User {
   notifications     Notification[]
   auditLogs         AuditLog[]
   comments          Comment[]
+  moderatedComments Comment[] @relation("CommentModeration")
   leaderboard       Leaderboard?
 
   @@map("users")
@@ -79,13 +80,22 @@ model Execution {
 }
 
 model Comment {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   snippetId  String
-  snippet    Snippet @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  snippet    Snippet   @relation(fields: [snippetId], references: [id], onDelete: Cascade)
   authorId   String
-  author     User    @relation(fields: [authorId], references: [id])
+  author     User      @relation(fields: [authorId], references: [id])
   content    String
-  createdAt  DateTime @default(now())
+  parentId   String?
+  parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Comment[] @relation("CommentReplies")
+  depth      Int       @default(0)
+  isDeleted  Boolean   @default(false)
+  moderated  Boolean   @default(false)
+  moderatorId String?
+  moderator  User?     @relation("CommentModeration", fields: [moderatorId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@map("comments")
 }

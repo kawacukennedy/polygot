@@ -134,6 +134,47 @@ export const getUser = async (id: string): Promise<any> => {
   });
 };
 
+// Comment API functions
+export const getComments = async (snippetId: string, page?: number, limit?: number): Promise<any> => {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (limit) params.append('limit', limit.toString());
+
+  const queryString = params.toString();
+  const url = `/comments/snippets/${snippetId}${queryString ? `?${queryString}` : ''}`;
+
+  return apiCall(url, {
+    method: 'GET',
+  });
+};
+
+export const createComment = async (snippetId: string, content: string, parentId?: string): Promise<any> => {
+  return apiCall('/comments', {
+    method: 'POST',
+    body: JSON.stringify({ snippetId, content, parentId }),
+  });
+};
+
+export const updateComment = async (commentId: string, content: string): Promise<any> => {
+  return apiCall(`/comments/${commentId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ content }),
+  });
+};
+
+export const deleteComment = async (commentId: string): Promise<any> => {
+  return apiCall(`/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const moderateComment = async (commentId: string, action: 'approve' | 'hide' | 'delete'): Promise<any> => {
+  return apiCall(`/comments/${commentId}/moderate`, {
+    method: 'PATCH',
+    body: JSON.stringify({ action }),
+  });
+};
+
 // Admin API functions (Placeholders)
 export const getUsersAdmin = async (): Promise<any[]> => {
   // Placeholder for fetching all users for admin panel

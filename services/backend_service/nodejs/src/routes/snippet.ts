@@ -47,9 +47,25 @@ router.get('/:id', async (req, res) => {
           select: { username: true }
         },
         comments: {
+          where: { isDeleted: false },
           include: {
-            author: { select: { username: true } }
-          }
+            author: { select: { id: true, username: true, avatarUrl: true } },
+            replies: {
+              where: { isDeleted: false },
+              include: {
+                author: { select: { id: true, username: true, avatarUrl: true } },
+                replies: {
+                  where: { isDeleted: false },
+                  include: {
+                    author: { select: { id: true, username: true, avatarUrl: true } }
+                  },
+                  orderBy: { createdAt: 'asc' }
+                }
+              },
+              orderBy: { createdAt: 'asc' }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
         }
       }
     });
