@@ -20,6 +20,8 @@ import MySnippetsPage from './pages/MySnippetsPage';
 import ExecutionsPage from './pages/ExecutionsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Import components
 import Header from './components/Header';
@@ -76,6 +78,8 @@ function App() {
              <Route path="/signup" element={<SignUpPage />} />
              <Route path="/login" element={<LoginPage />} />
              <Route path="/verify-email" element={<VerifyEmailPage />} />
+             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+             <Route path="/reset-password" element={<ResetPasswordPage />} />
              <Route path="/dashboard" element={<DashboardPage />} />
              <Route path="/snippets/new" element={<SnippetEditorPage />} />
              <Route path="/snippets/:id/edit" element={<SnippetEditorPage />} />
