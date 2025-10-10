@@ -279,6 +279,55 @@ export const killExecutionAdmin = async (executionId: string): Promise<any> => {
   });
 };
 
+// Analytics API functions
+export const getAnalyticsOverview = async (): Promise<any> => {
+  return apiCall('/admin/analytics/overview', {
+    method: 'GET',
+  });
+};
+
+export const getUsersGrowth = async (days?: number): Promise<any> => {
+  const params = new URLSearchParams();
+  if (days) params.append('days', days.toString());
+
+  return apiCall(`/admin/analytics/users-growth?${params.toString()}`, {
+    method: 'GET',
+  });
+};
+
+export const getSnippetsGrowth = async (days?: number): Promise<any> => {
+  const params = new URLSearchParams();
+  if (days) params.append('days', days.toString());
+
+  return apiCall(`/admin/analytics/snippets-growth?${params.toString()}`, {
+    method: 'GET',
+  });
+};
+
+export const getLanguageDistribution = async (): Promise<any> => {
+  return apiCall('/admin/analytics/language-distribution', {
+    method: 'GET',
+  });
+};
+
+export const getTopUsersAnalytics = async (limit?: number): Promise<any> => {
+  const params = new URLSearchParams();
+  if (limit) params.append('limit', limit.toString());
+
+  return apiCall(`/admin/analytics/top-users?${params.toString()}`, {
+    method: 'GET',
+  });
+};
+
+export const getRecentActivity = async (limit?: number): Promise<any> => {
+  const params = new URLSearchParams();
+  if (limit) params.append('limit', limit.toString());
+
+  return apiCall(`/admin/analytics/recent-activity?${params.toString()}`, {
+    method: 'GET',
+  });
+};
+
 export const getSystemHealthMetrics = async (): Promise<any> => {
   // Placeholder for fetching system health metrics
   return {

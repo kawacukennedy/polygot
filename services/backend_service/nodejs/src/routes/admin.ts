@@ -209,4 +209,304 @@ router.post('/executions/:id/kill', authenticate, requireAdmin, async (req, res)
   }
 });
 
+// Analytics endpoints
+router.get('/analytics/overview', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const now = new Date();
+    const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // User statistics
+    const totalUsers = await prisma.user.count();
+    const newUsers30Days = await prisma.user.count({
+      where: { createdAt: { gte: last30Days } }
+    });
+    const newUsers7Days = await prisma.user.count({
+      where: { createdAt: { gte: last7Days } }
+    });
+
+    // Snippet statistics
+    const totalSnippets = await prisma.snippet.count();
+    const publicSnippets = await prisma.snippet.count({
+      where: { visibility: 'PUBLIC' }
+    });
+    const newSnippets30Days = await prisma.snippet.count({
+      where: { createdAt: { gte: last30Days } }
+    });
+
+    // Execution statistics
+    const totalExecutions = await prisma.execution.count();
+    const executions30Days = await prisma.execution.count({
+      where: { startedAt: { gte: last30Days } }
+    });
+    const successfulExecutions = await prisma.execution.count({
+      where: { status: 'SUCCESS' }
+    });
+
+    // Comment statistics
+    const totalComments = await prisma.comment.count({
+      where: { isDeleted: false }
+    });
+    const comments30Days = await prisma.comment.count({
+      where: {
+        isDeleted: false,
+        createdAt: { gte: last30Days }
+      }
+    });
+
+    res.json({
+      users: {
+        total: totalUsers,
+        newLast30Days: newUsers30Days,
+        newLast7Days: newUsers7Days
+      },
+      snippets: {
+        total: totalSnippets,
+        public: publicSnippets,
+        newLast30Days: newSnippets30Days
+      },
+      executions: {
+        total: totalExecutions,
+        last30Days: executions30Days,
+        successRate: totalExecutions > 0 ? (successfulExecutions / totalExecutions * 100).toFixed(1) : 0
+      },
+      comments: {
+        total: totalComments,
+        last30Days: comments30Days
+      }
+    });
+  } catch (error) {
+    logger.error({ error }, 'Get analytics overview error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.get('/analytics/users-growth', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const days = parseInt(req.query.days as string) || 30;
+    const data = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+
+      const count = await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: startOfDay,
+            lt: endOfDay
+          }
+        }
+      });
+
+      data.push({
+        date: startOfDay.toISOString().split('T')[0],
+        users: count
+      });
+    }
+
+    res.json(data);
+  } catch (error) {
+    logger.error({ error }, 'Get users growth error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.get('/analytics/snippets-growth', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const days = parseInt(req.query.days as string) || 30;
+    const data = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+
+      const count = await prisma.snippet.count({
+        where: {
+          createdAt: {
+            gte: startOfDay,
+            lt: endOfDay
+          }
+        }
+      });
+
+      data.push({
+        date: startOfDay.toISOString().split('T')[0],
+        snippets: count
+      });
+    }
+
+    res.json(data);
+  } catch (error) {
+    logger.error({ error }, 'Get snippets growth error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.get('/analytics/language-distribution', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const languageStats = await prisma.snippet.groupBy({
+      by: ['language'],
+      _count: {
+        language: true
+      },
+      orderBy: {
+        _count: {
+          language: 'desc'
+        }
+      }
+    });
+
+    const data = languageStats.map(stat => ({
+      language: stat.language,
+      count: stat._count.language
+    }));
+
+    res.json(data);
+  } catch (error) {
+    logger.error({ error }, 'Get language distribution error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.get('/analytics/top-users', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    // Get users with most snippets
+    const topSnippetCreators = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        avatarUrl: true,
+        _count: {
+          select: {
+            snippets: true
+          }
+        }
+      },
+      orderBy: {
+        snippets: {
+          _count: 'desc'
+        }
+      },
+      take: limit
+    });
+
+    // Get users with most executions
+    const topExecutors = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        avatarUrl: true,
+        _count: {
+          select: {
+            executions: true
+          }
+        }
+      },
+      orderBy: {
+        executions: {
+          _count: 'desc'
+        }
+      },
+      take: limit
+    });
+
+    res.json({
+      snippetCreators: topSnippetCreators.map(user => ({
+        id: user.id,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+        count: user._count.snippets
+      })),
+      executors: topExecutors.map(user => ({
+        id: user.id,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+        count: user._count.executions
+      }))
+    });
+  } catch (error) {
+    logger.error({ error }, 'Get top users error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.get('/analytics/recent-activity', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 20;
+
+    // Recent snippets
+    const recentSnippets = await prisma.snippet.findMany({
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        owner: {
+          select: { username: true }
+        }
+      }
+    });
+
+    // Recent executions
+    const recentExecutions = await prisma.execution.findMany({
+      take: limit,
+      orderBy: { startedAt: 'desc' },
+      include: {
+        user: {
+          select: { username: true }
+        },
+        snippet: {
+          select: { title: true }
+        }
+      }
+    });
+
+    // Recent comments
+    const recentComments = await prisma.comment.findMany({
+      where: { isDeleted: false },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        author: {
+          select: { username: true }
+        },
+        snippet: {
+          select: { title: true }
+        }
+      }
+    });
+
+    res.json({
+      recentSnippets: recentSnippets.map(snippet => ({
+        id: snippet.id,
+        title: snippet.title,
+        author: snippet.owner.username,
+        createdAt: snippet.createdAt
+      })),
+      recentExecutions: recentExecutions.map(execution => ({
+        id: execution.id,
+        snippetTitle: execution.snippet.title,
+        user: execution.user.username,
+        status: execution.status,
+        startedAt: execution.startedAt
+      })),
+      recentComments: recentComments.map(comment => ({
+        id: comment.id,
+        snippetTitle: comment.snippet.title,
+        author: comment.author.username,
+        content: comment.content.substring(0, 100) + (comment.content.length > 100 ? '...' : ''),
+        createdAt: comment.createdAt
+      }))
+    });
+  } catch (error) {
+    logger.error({ error }, 'Get recent activity error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 export default router;
