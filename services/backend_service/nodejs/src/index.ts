@@ -74,10 +74,25 @@ app.get('/health', (req, res) => {
 io.on('connection', (socket) => {
   logger.info({ socketId: socket.id }, 'User connected');
 
+  // Join leaderboard room for real-time updates
+  socket.on('join-leaderboard', () => {
+    socket.join('leaderboard');
+    logger.info({ socketId: socket.id }, 'User joined leaderboard room');
+  });
+
+  // Leave leaderboard room
+  socket.on('leave-leaderboard', () => {
+    socket.leave('leaderboard');
+    logger.info({ socketId: socket.id }, 'User left leaderboard room');
+  });
+
   socket.on('disconnect', () => {
     logger.info({ socketId: socket.id }, 'User disconnected');
   });
 });
+
+// Export io for use in other modules
+export { io };
 
 // The error handler must be registered before any other error middleware and after all controllers
 app.use(Sentry.expressErrorHandler());

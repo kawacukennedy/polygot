@@ -48,14 +48,23 @@ const LeaderboardPage: React.FC = () => {
 
     fetchLeaderboard();
 
-    const socket = io('http://localhost:3001'); // Assuming WebSocket server runs on port 3001
-    socket.on('leaderboard_updates', (updatedLeaderboard: LeaderboardEntry[]) => {
-      setLeaderboard(updatedLeaderboard);
-      // Flash updated rows
-      const updatedRanks = new Set(updatedLeaderboard.map(e => e.rank));
-      setFlashRows(updatedRanks);
-      setTimeout(() => setFlashRows(new Set()), 600);
-      addToast('Leaderboard updated in real-time!', 'info');
+    const socket = io('http://localhost:3001'); // Backend WebSocket server
+    socket.emit('join-leaderboard'); // Join leaderboard room
+
+    socket.on('leaderboard-update', (updateData: any) => {
+      // Update specific user's data in leaderboard
+      setLeaderboard(prev => prev.map(entry =>
+        entry.user === updateData.userId ? { ...entry, score: updateData.score } : entry
+      ).sort((a, b) => b.score - a.score)); // Re-sort by score
+
+      // Flash the updated row
+      const updatedEntry = leaderboard.find(entry => entry.user === updateData.userId);
+      if (updatedEntry) {
+        setFlashRows(new Set([updatedEntry.rank]));
+        setTimeout(() => setFlashRows(new Set()), 600);
+      }
+
+      addToast('Leaderboard updated!', 'info');
     });
 
     return () => {

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { trackAchievementUnlocked } from './analytics';
+import { io } from '../index';
 
 const prisma = new PrismaClient();
 
@@ -37,21 +38,29 @@ const POINTS_CONFIG = {
 export const awardPoints = async (userId: string, action: keyof typeof POINTS_CONFIG) => {
   const points = POINTS_CONFIG[action];
 
-  // Update leaderboard score
-  await prisma.leaderboard.upsert({
-    where: { userId },
-    create: {
+    // Update leaderboard score
+    const updatedLeaderboard = await prisma.leaderboard.upsert({
+      where: { userId },
+      create: {
+        userId,
+        score: points,
+        snippetsShared: action === 'snippet_shared' ? 1 : 0,
+        achievementsUnlocked: action === 'achievement_unlocked' ? 1 : 0
+      },
+      update: {
+        score: { increment: points },
+        ...(action === 'snippet_shared' && { snippetsShared: { increment: 1 } }),
+        ...(action === 'achievement_unlocked' && { achievementsUnlocked: { increment: 1 } })
+      }
+    });
+
+    // Emit real-time leaderboard update
+    io.to('leaderboard').emit('leaderboard-update', {
       userId,
-      score: points,
-      snippetsShared: action === 'snippet_shared' ? 1 : 0,
-      achievementsUnlocked: action === 'achievement_unlocked' ? 1 : 0
-    },
-    update: {
-      score: { increment: points },
-      ...(action === 'snippet_shared' && { snippetsShared: { increment: 1 } }),
-      ...(action === 'achievement_unlocked' && { achievementsUnlocked: { increment: 1 } })
-    }
-  });
+      score: updatedLeaderboard.score,
+      snippetsShared: updatedLeaderboard.snippetsShared,
+      achievementsUnlocked: updatedLeaderboard.achievementsUnlocked
+    });
 
   // Check for achievements
   await checkAchievements(userId);
