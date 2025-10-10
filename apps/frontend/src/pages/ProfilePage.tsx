@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { getUser, uploadAvatar, updateUserProfile, changeUserPassword } from '../services/api';
 
 const ProfilePage: React.FC = () => {
+  const { user } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [email, setEmail] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/160');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -31,14 +34,24 @@ const ProfilePage: React.FC = () => {
   const { addToast } = useToast();
 
   useEffect(() => {
-    // Fetch user profile data
-    setTimeout(() => {
-      setDisplayName('Test User');
-      setBio('This is a test bio.');
-      setEmail('test@example.com');
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const loadUserProfile = async () => {
+      if (!user?.id) return;
+
+      try {
+        const userData = await getUser(user.id);
+        setDisplayName(userData.display_name || '');
+        setBio(userData.bio || '');
+        setEmail(userData.email || '');
+        setAvatarUrl(userData.avatar_url || '');
+      } catch (error) {
+        addToast('Failed to load profile', 'error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserProfile();
+  }, [user?.id, addToast]);
 
   // Autosave
   useEffect(() => {
@@ -53,7 +66,7 @@ const ProfilePage: React.FC = () => {
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user?.id) return;
 
     if (file.size > 5 * 1024 * 1024) {
       addToast('File too large', 'error');
@@ -65,43 +78,27 @@ const ProfilePage: React.FC = () => {
     }
 
     setIsUploadingAvatar(true);
-    const formData = new FormData();
-    formData.append('avatar', file);
 
     try {
-      const response = await fetch('/users/1/avatar', {
-        method: 'POST',
-        body: formData,
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setAvatarUrl(data.avatarUrl);
-        addToast('Avatar uploaded successfully!', 'success');
-      } else {
-        addToast('Failed to upload avatar.', 'error');
-      }
+      const data = await uploadAvatar(user.id, file);
+      setAvatarUrl(data.avatarUrl);
+      addToast('Avatar uploaded successfully!', 'success');
     } catch (error) {
-      addToast('Network error while uploading avatar.', 'error');
+      addToast('Failed to upload avatar.', 'error');
     } finally {
       setIsUploadingAvatar(false);
     }
   };
 
   const handleSaveChanges = async () => {
+    if (!user?.id) return;
+
     setIsSavingProfile(true);
     try {
-      const response = await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName, bio }),
-      });
-      if (response.ok) {
-        addToast('Profile updated successfully!', 'success');
-      } else {
-        addToast('Failed to update profile.', 'error');
-      }
+      await updateUserProfile(user.id, displayName, email, bio);
+      addToast('Profile updated successfully!', 'success');
     } catch (error) {
-      addToast('Network error while saving profile.', 'error');
+      addToast('Failed to update profile.', 'error');
     } finally {
       setIsSavingProfile(false);
     }
@@ -141,24 +138,14 @@ const ProfilePage: React.FC = () => {
 
     setIsChangingPassword(true);
     try {
-      const response = await fetch('/api/profile/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-      if (response.ok) {
-        addToast('Password changed successfully!', 'success');
-        setIsPasswordModalOpen(false);
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmNewPassword('');
-      } else {
-        const errorData = await response.json();
-        newErrors.form = errorData.message || 'Failed to change password.';
-        setPasswordErrors(newErrors);
-      }
-    } catch (error) {
-      newErrors.form = 'Network error while changing password.';
+      await changeUserPassword(currentPassword, newPassword);
+      addToast('Password changed successfully!', 'success');
+      setIsPasswordModalOpen(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (error: any) {
+      newErrors.form = error.message || 'Failed to change password.';
       setPasswordErrors(newErrors);
     } finally {
       setIsChangingPassword(false);
@@ -180,7 +167,7 @@ const ProfilePage: React.FC = () => {
           <CardContent className="text-center">
             <Avatar className="w-32 h-32 mx-auto mb-4">
               <AvatarImage src={avatarUrl} alt="Avatar" />
-              <AvatarFallback>TU</AvatarFallback>
+              <AvatarFallback>{displayName ? displayName.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
             </Avatar>
             <input
               type="file"

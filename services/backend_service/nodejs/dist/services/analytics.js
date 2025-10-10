@@ -1,8 +1,7 @@
 "use strict";
+// import { PrismaClient } from '@prisma/client';
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.trackAchievementUnlocked = exports.trackSnippetRun = exports.trackLoginSuccess = exports.trackSignupSuccess = exports.trackEvent = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
 const trackEvent = async (eventData) => {
     // For now, we'll log to console. In production, this could send to analytics service
     console.log('Analytics event:', eventData);
@@ -40,7 +39,7 @@ const trackSnippetRun = (userId, snippetId, executionTimeMs, status, ipAddress) 
     });
 };
 exports.trackSnippetRun = trackSnippetRun;
-const trackAchievementUnlocked = (userId, achievementId) => {
+const trackAchievementUnlocked = (userId) => {
     (0, exports.trackEvent)({
         event: 'achievement_unlocked',
         userId,

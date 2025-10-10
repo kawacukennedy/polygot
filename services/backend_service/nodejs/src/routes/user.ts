@@ -1,6 +1,8 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate } from '../middleware/auth';
+import { uploadAvatar, deleteOldAvatar, getAvatarUrl } from '../utils/upload';
+import logger from '../utils/logger';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -76,7 +78,74 @@ router.patch('/:id', authenticate, async (req, res) => {
 
     res.status(200).json({ message: 'updated' });
   } catch (error) {
-    console.error('Update user error:', error);
+    logger.error({ error, userId: id }, 'Update user error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Upload avatar
+router.post('/:id/avatar', authenticate, uploadAvatar.single('avatar'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user is updating their own avatar
+    if (req.user!.userId !== id) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Get current user to delete old avatar
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (user?.avatarUrl) {
+      deleteOldAvatar(user.avatarUrl);
+    }
+
+    // Generate avatar URL
+    const avatarUrl = getAvatarUrl(req.file.filename);
+
+    // Update user avatar
+    await prisma.user.update({
+      where: { id },
+      data: { avatarUrl }
+    });
+
+    logger.info({ userId: id, filename: req.file.filename }, 'Avatar uploaded successfully');
+
+    res.json({ avatarUrl });
+  } catch (error) {
+    logger.error({ error, userId: req.params.id }, 'Avatar upload error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Delete avatar
+router.delete('/:id/avatar', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user is updating their own avatar
+    if (req.user!.userId !== id) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (user?.avatarUrl) {
+      deleteOldAvatar(user.avatarUrl);
+
+      await prisma.user.update({
+        where: { id },
+        data: { avatarUrl: null }
+      });
+    }
+
+    logger.info({ userId: id }, 'Avatar deleted successfully');
+
+    res.json({ message: 'Avatar deleted' });
+  } catch (error) {
+    logger.error({ error, userId: req.params.id }, 'Avatar delete error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });

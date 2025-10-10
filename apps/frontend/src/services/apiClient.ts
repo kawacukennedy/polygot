@@ -9,8 +9,10 @@ interface ApiErrorResponse {
 export async function apiCall<T>(url: string, options?: RequestInit, retries = 2): Promise<T> {
   const token = localStorage.getItem('accessToken');
 
+  // Don't set Content-Type for FormData - let the browser set it with boundary
+  const isFormData = options?.body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
+    ...(!isFormData && { 'Content-Type': 'application/json' }),
     ...(token && { 'Authorization': `Bearer ${token}` }),
     ...options?.headers,
   };

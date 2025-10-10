@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import path from 'path';
 import dotenv from 'dotenv';
 import logger from './utils/logger';
 
@@ -64,6 +65,9 @@ app.use('/snippets', snippetRoutes);
 app.use('/leaderboard', leaderboardRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/admin', adminRoutes);
+
+// Serve static files (avatars)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health check
 app.get('/health', (req, res) => {

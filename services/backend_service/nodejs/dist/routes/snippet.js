@@ -10,6 +10,7 @@ const execution_1 = require("../services/execution");
 const gamification_1 = require("../services/gamification");
 const analytics_1 = require("../services/analytics");
 const security_1 = require("../middleware/security");
+const logger_1 = __importDefault(require("../utils/logger"));
 const router = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
 // Create snippet
@@ -31,7 +32,7 @@ router.post('/', auth_1.authenticate, security_1.sanitizeInput, security_1.valid
         res.status(201).json(snippet);
     }
     catch (error) {
-        console.error('Create snippet error:', error);
+        logger_1.default.error({ error, userId: req.user.userId }, 'Create snippet error');
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -61,7 +62,7 @@ router.get('/:id', async (req, res) => {
         res.json(snippet);
     }
     catch (error) {
-        console.error('Get snippet error:', error);
+        logger_1.default.error({ error, snippetId: id }, 'Get snippet error');
         res.status(500).json({ message: 'Internal server error' });
     }
 });
@@ -114,7 +115,7 @@ router.post('/:id/run', auth_1.authenticate, async (req, res) => {
         res.status(202).json({ executionId: execution.id });
     }
     catch (error) {
-        console.error('Run snippet error:', error);
+        logger_1.default.error({ error, snippetId: id, userId: req.user.userId }, 'Run snippet error');
         res.status(500).json({ message: 'Internal server error' });
     }
 });

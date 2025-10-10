@@ -104,16 +104,16 @@ export const getRecentExecutions = async (limit: number = 10): Promise<any> => {
 
 
 // User Profile API functions
-export const updateUserProfile = async (userId: string, name: string, email: string, bio: string): Promise<any> => {
+export const updateUserProfile = async (userId: string, displayName: string, bio: string): Promise<any> => {
   return apiCall(`/users/${userId}`, {
-    method: 'PUT',
-    body: JSON.stringify({ name, email, bio }),
+    method: 'PATCH',
+    body: JSON.stringify({ display_name: displayName, bio }),
   });
 };
 
-export const changeUserPassword = async (userId: string, currentPassword: string, newPassword: string): Promise<any> => {
-  return apiCall(`/users/${userId}/password`, {
-    method: 'PUT',
+export const changeUserPassword = async (currentPassword: string, newPassword: string): Promise<any> => {
+  return apiCall('/auth/change-password', {
+    method: 'POST',
     body: JSON.stringify({ currentPassword, newPassword }),
   });
 };
@@ -124,9 +124,6 @@ export const uploadAvatar = async (userId: string, file: File): Promise<any> => 
 
   return apiCall(`/users/${userId}/avatar`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'multipart/form-data', // Set content type for FormData
-    },
     body: formData,
   });
 };

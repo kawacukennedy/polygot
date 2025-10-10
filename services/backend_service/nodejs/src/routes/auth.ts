@@ -10,6 +10,7 @@ import { validateSignup, sanitizeInput } from '../middleware/security';
 import { awardDailyLogin } from '../services/gamification';
 import logger from '../utils/logger';
 import emailService from '../utils/email';
+import { authenticate } from '../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -328,6 +329,41 @@ router.post('/reset-password', async (req, res) => {
     res.json({ message: 'Password reset successfully' });
   } catch (error) {
     logger.error({ error }, 'Password reset error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Change Password
+router.post('/change-password', authenticate, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user!.userId;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isValidPassword) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const newPasswordHash = await bcrypt.hash(newPassword, 12);
+
+    // Update password
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newPasswordHash }
+    });
+
+    logger.info({ userId }, 'Password changed successfully');
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    logger.error({ error, userId: req.user?.userId }, 'Change password error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });
