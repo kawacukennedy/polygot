@@ -16,6 +16,9 @@ const ProfilePage: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [email, setEmail] = useState('');
+  const [links, setLinks] = useState('');
+  const [theme, setTheme] = useState('light');
+  const [privacyLevel, setPrivacyLevel] = useState('public');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -42,6 +45,9 @@ const ProfilePage: React.FC = () => {
         setDisplayName(userData.display_name || '');
         setBio(userData.bio || '');
         setEmail(userData.email || '');
+        setLinks(userData.links || '');
+        setTheme(userData.theme || 'light');
+        setPrivacyLevel(userData.privacy_level || 'public');
         setAvatarUrl(userData.avatar_url || '');
       } catch (error) {
         addToast('Failed to load profile', 'error');
@@ -55,14 +61,18 @@ const ProfilePage: React.FC = () => {
 
   // Autosave
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (displayName || bio) {
-        // Autosave logic
-        console.log('Autosaving profile');
+    const timer = setTimeout(async () => {
+      if (user?.id && (displayName || bio || links)) {
+        try {
+          await updateUserProfile(user.id, displayName, bio);
+          console.log('Profile autosaved');
+        } catch (error) {
+          console.error('Autosave failed', error);
+        }
       }
-    }, 700);
+    }, 3000);
     return () => clearTimeout(timer);
-  }, [displayName, bio]);
+  }, [displayName, bio, links, user?.id, email]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,7 +105,7 @@ const ProfilePage: React.FC = () => {
 
     setIsSavingProfile(true);
     try {
-      await updateUserProfile(user.id, displayName, email, bio);
+      await updateUserProfile(user.id, displayName, bio);
       addToast('Profile updated successfully!', 'success');
     } catch (error) {
       addToast('Failed to update profile.', 'error');
@@ -209,6 +219,15 @@ const ProfilePage: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="links">Links</Label>
+              <Input
+                id="links"
+                value={links}
+                onChange={(e) => setLinks(e.target.value)}
+                placeholder="https://github.com/username"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -225,13 +244,45 @@ const ProfilePage: React.FC = () => {
               Change Password
             </Button>
           </CardContent>
-        </Card>
-      </div>
-      <div className="mt-6 flex justify-end">
-        <Button onClick={handleSaveChanges} disabled={isSavingProfile}>
-          {isSavingProfile ? 'Saving...' : 'Save Changes'}
-        </Button>
-      </div>
+         </Card>
+         <Card>
+           <CardHeader>
+             <CardTitle>Settings</CardTitle>
+           </CardHeader>
+           <CardContent className="space-y-4">
+             <div className="space-y-2">
+               <Label>Theme</Label>
+               <select
+                 value={theme}
+                 onChange={(e) => setTheme(e.target.value)}
+                 className="w-full px-3 py-2 border rounded"
+               >
+                 <option value="light">Light</option>
+                 <option value="dark">Dark</option>
+               </select>
+             </div>
+             <div className="space-y-2">
+               <Label>Privacy Level</Label>
+               <select
+                 value={privacyLevel}
+                 onChange={(e) => setPrivacyLevel(e.target.value)}
+                 className="w-full px-3 py-2 border rounded"
+               >
+                 <option value="public">Public</option>
+                 <option value="private">Private</option>
+               </select>
+             </div>
+             <Button variant="destructive" onClick={() => {/* delete account */}}>
+               Delete Account
+             </Button>
+           </CardContent>
+         </Card>
+       </div>
+       <div className="mt-6 flex justify-end">
+         <Button onClick={handleSaveChanges} disabled={isSavingProfile}>
+           {isSavingProfile ? 'Saving...' : 'Save Changes'}
+         </Button>
+       </div>
 
       <Modal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)}>
         <div className="space-y-4">

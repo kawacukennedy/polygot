@@ -75,13 +75,9 @@ router.post('/signup', authLimiter, sanitizeInput, validateSignup, async (req, r
     trackSignupSuccess(user.id, req.ip);
 
     res.status(201).json({
-      message: 'User created successfully. Please check your email to verify your account.',
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        emailVerified: false
-      }
+      userId: user.id,
+      username: user.username,
+      email: user.email
     });
   } catch (error) {
     logger.error({ error }, 'Signup error');
@@ -92,7 +88,7 @@ router.post('/signup', authLimiter, sanitizeInput, validateSignup, async (req, r
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
@@ -114,29 +110,37 @@ router.post('/login', async (req, res) => {
     // Award daily login points
     await awardDailyLogin(user.id);
 
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '15m' }
-    );
+    if (user.twoFactorEnabled) {
+      const tempToken = jwt.sign(
+        { userId: user.id, role: user.role },
+        process.env.JWT_SECRET!,
+        { expiresIn: '5m' } // short for 2FA
+      );
 
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_REFRESH_SECRET!,
-      { expiresIn: '30d' }
-    );
+      res.json({
+        twoFactorRequired: true,
+        tempToken
+      });
+    } else {
+      const token = jwt.sign(
+        { userId: user.id, role: user.role },
+        process.env.JWT_SECRET!,
+        { expiresIn: '15m' }
+      );
 
-    res.json({
-      token,
-      refreshToken,
-      twoFactorRequired: user.twoFactorEnabled,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        emailVerified: user.emailVerified
-      }
-    });
+      const refreshToken = jwt.sign(
+        { userId: user.id },
+        process.env.JWT_REFRESH_SECRET!,
+        { expiresIn: rememberMe ? '90d' : '30d' }
+      );
+
+      res.cookie('access_token', token, { httpOnly: true, secure: true, sameSite: 'strict' });
+      res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict' });
+
+      res.json({
+        redirect: '/dashboard'
+      });
+    }
   } catch (error) {
     logger.error({ error, email }, 'Login error');
     res.status(500).json({ message: 'Internal server error' });
@@ -146,14 +150,9 @@ router.post('/login', async (req, res) => {
 // 2FA Verify
 router.post('/2fa/verify', async (req, res) => {
   try {
-    const { otp } = req.body;
-    const token = req.headers.authorization?.split(' ')[1];
+    const { otp, tempToken } = req.body;
 
-    if (!token) {
-      return res.status(401).json({ message: 'No token provided' });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    const decoded = jwt.verify(tempToken, process.env.JWT_SECRET!) as { userId: string };
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
 
     if (!user || !user.twoFactorSecret) {
@@ -170,9 +169,24 @@ router.post('/2fa/verify', async (req, res) => {
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
-    res.json({ message: '2FA verified successfully' });
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: '15m' }
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_REFRESH_SECRET!,
+      { expiresIn: '30d' }
+    );
+
+    res.cookie('access_token', token, { httpOnly: true, secure: true, sameSite: 'strict' });
+    res.cookie('refresh_token', refreshToken, { httpOnly: true, secure: true, sameSite: 'strict' });
+
+    res.json({ redirect: '/dashboard' });
   } catch (error) {
-    logger.error({ error, userId: decoded?.userId }, '2FA verify error');
+    logger.error({ error }, '2FA verify error');
     res.status(500).json({ message: 'Internal server error' });
   }
 });

@@ -6,9 +6,10 @@ import { useToast } from '../contexts/ToastContext';
 interface LeaderboardEntry {
   rank: number;
   avatar: string;
-  user: string;
+  name: string;
   score: number;
-  language: string;
+  primary_language: string;
+  snippets_shared: number;
 }
 
 const LeaderboardPage: React.FC = () => {
@@ -51,21 +52,21 @@ const LeaderboardPage: React.FC = () => {
     const socket = io('http://localhost:3001'); // Backend WebSocket server
     socket.emit('join-leaderboard'); // Join leaderboard room
 
-    socket.on('leaderboard-update', (updateData: any) => {
-      // Update specific user's data in leaderboard
-      setLeaderboard(prev => prev.map(entry =>
-        entry.user === updateData.userId ? { ...entry, score: updateData.score } : entry
-      ).sort((a, b) => b.score - a.score)); // Re-sort by score
+      socket.on('leaderboard-update', (updateData: any) => {
+        // Update specific user's data in leaderboard
+        setLeaderboard(prev => prev.map(entry =>
+          entry.name === updateData.userId ? { ...entry, score: updateData.score } : entry
+        ).sort((a, b) => b.score - a.score)); // Re-sort by score
 
-      // Flash the updated row
-      const updatedEntry = leaderboard.find(entry => entry.user === updateData.userId);
-      if (updatedEntry) {
-        setFlashRows(new Set([updatedEntry.rank]));
-        setTimeout(() => setFlashRows(new Set()), 600);
-      }
+        // Flash the updated row
+        const updatedEntry = leaderboard.find(entry => entry.name === updateData.userId);
+        if (updatedEntry) {
+          setFlashRows(new Set([updatedEntry.rank]));
+          setTimeout(() => setFlashRows(new Set()), 600);
+        }
 
-      addToast('Leaderboard updated!', 'info');
-    });
+        addToast('Leaderboard updated!', 'info');
+      });
 
     return () => {
       socket.disconnect();
@@ -73,8 +74,8 @@ const LeaderboardPage: React.FC = () => {
   }, [languageFilter, timeFilter]);
 
   const filteredLeaderboard = leaderboard.filter(entry =>
-    entry.user.toLowerCase().includes(debouncedQuery.toLowerCase()) &&
-    (languageFilter === 'all' || entry.language === languageFilter)
+    entry.name.toLowerCase().includes(debouncedQuery.toLowerCase()) &&
+    (languageFilter === 'all' || entry.primary_language === languageFilter)
   );
 
   return (
@@ -138,9 +139,10 @@ const LeaderboardPage: React.FC = () => {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="p-4 text-left">Rank</th>
-                <th className="p-4 text-left">User</th>
+                <th className="p-4 text-left">Name</th>
                 <th className="p-4 text-left">Score</th>
-                <th className="p-4 text-left">Language</th>
+                <th className="p-4 text-left">Primary Language</th>
+                <th className="p-4 text-left">Snippets Shared</th>
               </tr>
             </thead>
             <tbody>
@@ -162,11 +164,12 @@ const LeaderboardPage: React.FC = () => {
                 >
                   <td className="p-4">{entry.rank}</td>
                   <td className="p-4 flex items-center">
-                    <img src={entry.avatar} alt={entry.user} className="w-10 h-10 rounded-full mr-4" />
-                    {entry.user}
+                    <img src={entry.avatar} alt={entry.name} className="w-10 h-10 rounded-full mr-4" />
+                    {entry.name}
                   </td>
                   <td className="p-4">{entry.score}</td>
-                  <td className="p-4">{entry.language}</td>
+                  <td className="p-4">{entry.primary_language}</td>
+                  <td className="p-4">{entry.snippets_shared}</td>
                 </tr>
               ))}
             </tbody>

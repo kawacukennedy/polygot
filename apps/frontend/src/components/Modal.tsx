@@ -5,9 +5,11 @@ interface ModalProps {
   children: ReactNode;
   isOpen: boolean;
   onClose: () => void;
+  title?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-const Modal: React.FC<ModalProps> = ({ children, isOpen, onClose }) => {
+const Modal: React.FC<ModalProps> = ({ children, isOpen, onClose, title, size = 'md' }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,6 +55,12 @@ const Modal: React.FC<ModalProps> = ({ children, isOpen, onClose }) => {
     };
   }, [isOpen, onClose]);
 
+  const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-2xl',
+    lg: 'max-w-4xl',
+  };
+
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
@@ -63,11 +71,17 @@ const Modal: React.FC<ModalProps> = ({ children, isOpen, onClose }) => {
       ></div>
       <div
         ref={modalRef}
-        className="bg-surface rounded-lg p-6 z-10 max-w-4xl w-full animate-modal-enter"
-        style={{ maxWidth: '880px', padding: '24px', borderRadius: '12px' }}
+        className={`bg-surface rounded-lg p-6 z-10 w-full animate-modal-enter ${sizeClasses[size]}`}
+        style={{ padding: '24px', borderRadius: '12px' }}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
       >
+        {title && (
+          <h2 id="modal-title" className="text-xl font-semibold mb-4">
+            {title}
+          </h2>
+        )}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center focus:outline-none"

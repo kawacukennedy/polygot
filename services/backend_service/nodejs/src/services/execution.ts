@@ -1,6 +1,9 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { Queue, Worker } from 'bullmq';
 import logger from '../utils/logger';
+import { trackSnippetRun } from './analytics';
+import { awardPoints } from './gamification';
 
 const execAsync = promisify(exec);
 
@@ -10,6 +13,44 @@ interface ExecutionResult {
   stderr: string;
   executionTime: number;
 }
+
+const executionQueue = new Queue('code-execution', {
+  connection: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+  },
+});
+
+const worker = new Worker('code-execution', async (job) => {
+  const { code, language, executionId, timeoutMs, userId, snippetId } = job.data;
+  const result = await executeInContainer(code, language, timeoutMs);
+  // Update DB
+  const { PrismaClient } = require('@prisma/client');
+  const prisma = new PrismaClient();
+  await prisma.execution.update({
+    where: { id: executionId },
+    data: {
+      status: result.success ? 'SUCCESS' : 'ERROR',
+      stdout: result.stdout,
+      stderr: result.stderr,
+      executionTimeMs: result.executionTime,
+      finishedAt: new Date()
+    }
+  });
+
+  // Track analytics
+  trackSnippetRun(userId, snippetId, result.executionTime, result.success ? 'success' : 'error', 'worker');
+
+  // Award points
+  await awardPoints(userId, 'snippet_run');
+
+  return result;
+}, {
+  connection: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+  },
+});
 
 const languageImages = {
   PYTHON: 'polyglot-python-runner',
@@ -22,7 +63,7 @@ const languageImages = {
   PHP: 'polyglot-php-runner'
 };
 
-export const executeCode = async (code: string, language: string): Promise<ExecutionResult> => {
+const executeInContainer = async (code: string, language: string, timeoutMs: number = 30000): Promise<ExecutionResult> => {
   const startTime = Date.now();
   logger.info({ language, codeLength: code.length }, 'Starting code execution');
 
@@ -40,40 +81,35 @@ export const executeCode = async (code: string, language: string): Promise<Execu
 
     // Execute with timeout
     const { stdout } = await Promise.race([
-      execAsync(command, { timeout: 35000 }), // Slightly more than 30s for container startup
+      execAsync(command, { timeout: timeoutMs + 5000 }), // Slightly more for container startup
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Execution timeout')), 35000)
+        setTimeout(() => reject(new Error('Execution timeout')), timeoutMs + 5000)
       )
     ]);
 
     // Parse JSON output from container
     const result = JSON.parse(stdout.trim());
-    logger.info({ language, success: result.success, executionTime: result.execution_time }, 'Code execution completed');
+
+    const executionTime = Date.now() - startTime;
+    logger.info({ language, executionTime }, 'Code execution completed');
 
     return {
       success: result.success,
       stdout: result.stdout,
       stderr: result.stderr,
-      executionTime: result.execution_time
+      executionTime
     };
-  } catch (error: unknown) {
-    const executionTime = Date.now() - startTime;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logger.error({ language, error: errorMessage, executionTime }, 'Code execution failed');
-
-    if (errorMessage.includes('timeout')) {
-      return {
-        success: false,
-        stdout: '',
-        stderr: 'Execution timed out after 30 seconds',
-        executionTime: 30000
-      };
-    }
+  } catch (error: any) {
+    logger.error({ error, language }, 'Code execution failed');
     return {
       success: false,
       stdout: '',
-      stderr: errorMessage,
-      executionTime
+      stderr: error.message,
+      executionTime: Date.now() - startTime
     };
   }
+};
+
+export const executeCode = async (code: string, language: string, executionId: string, userId: string, snippetId: string, timeoutMs: number = 30000): Promise<void> => {
+  await executionQueue.add('execute', { code, language, executionId, userId, snippetId, timeoutMs });
 };

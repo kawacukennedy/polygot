@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import CommentsSection from '../components/CommentsSection';
+import Modal from '../components/Modal';
 import { useToast } from '../contexts/ToastContext';
 import { getSnippetById } from '../services/api';
 
@@ -23,6 +24,7 @@ const SnippetViewPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const { addToast } = useToast();
 
   const handleCopyCode = async () => {
@@ -31,6 +33,13 @@ const SnippetViewPage: React.FC = () => {
       addToast('Copied!', 'success');
     }
   };
+
+  const handleCopyUrl = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    addToast('URL copied!', 'success');
+  };
+
+  const embedCode = `<iframe src="${window.location.href}" width="600" height="400"></iframe>`;
 
   const handleRun = async () => {
     setIsRunning(true);
@@ -138,18 +147,54 @@ const SnippetViewPage: React.FC = () => {
           <div className="mb-2">
             <span className="font-bold">Language:</span> {snippet.language}
           </div>
-          <div className="mb-2">
-            <span className="font-bold">Created At:</span> <time dateTime={snippet.createdAt} title={new Date(snippet.createdAt).toLocaleString()}>{new Date(snippet.createdAt).toLocaleString()}</time>
-          </div>
-          <button
-            onClick={handleRun}
-            disabled={isRunning}
-            className="w-full mt-6 h-11 bg-primary text-white font-bold rounded-md hover:bg-primary-hover disabled:bg-gray-400"
-          >
-            {isRunning ? 'Running...' : 'Run'}
-          </button>
+           <div className="mb-2">
+             <span className="font-bold">Created At:</span> <time dateTime={snippet.createdAt} title={new Date(snippet.createdAt).toLocaleString()}>{new Date(snippet.createdAt).toLocaleString()}</time>
+           </div>
+           <button
+             onClick={() => setShowShareModal(true)}
+             className="w-full mt-4 h-11 bg-secondary text-white font-bold rounded-md hover:bg-secondary-hover"
+           >
+             Share
+           </button>
+           <button
+             onClick={handleRun}
+             disabled={isRunning}
+             className="w-full mt-2 h-11 bg-primary text-white font-bold rounded-md hover:bg-primary-hover disabled:bg-gray-400"
+           >
+             {isRunning ? 'Running...' : 'Run'}
+           </button>
         </div>
       </div>
+
+      <Modal isOpen={showShareModal} onClose={() => setShowShareModal(false)}>
+        <h2>Share Snippet</h2>
+        <div className="space-y-4">
+          <button
+            onClick={handleCopyUrl}
+            className="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary-hover"
+          >
+            Copy URL
+          </button>
+          <div>
+            <label className="block text-sm font-medium mb-2">Embed Code</label>
+            <textarea
+              value={embedCode}
+              readOnly
+              className="w-full p-2 border rounded"
+              rows={3}
+            />
+            <button
+              onClick={async () => {
+                await navigator.clipboard.writeText(embedCode);
+                addToast('Embed code copied!', 'success');
+              }}
+              className="mt-2 bg-secondary text-white px-4 py-2 rounded hover:bg-secondary-hover"
+            >
+              Copy Embed Code
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

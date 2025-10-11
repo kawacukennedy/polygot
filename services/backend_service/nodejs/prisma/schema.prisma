@@ -15,10 +15,10 @@ model User {
   username          String   @unique @db.VarChar(20)
   email             String   @unique
   passwordHash      String
-  role              Role     @default(USER)
-  theme             Theme    @default(LIGHT)
-  privacyLevel      Privacy  @default(PUBLIC)
-  twoFactorEnabled  Boolean  @default(false)
+  role              String   @default("user")
+  theme             String?
+  privacyLevel      String   @default("public")
+  twoFAEnabled      Boolean  @default(false)
   twoFactorSecret   String?
   displayName       String?
   bio               String?
@@ -127,6 +127,7 @@ model AuditLog {
   admin     User     @relation(fields: [adminId], references: [id])
   action    String
   target    String
+  metadata  Json?
   timestamp DateTime @default(now())
 
   @@map("audit_logs")
@@ -143,20 +144,7 @@ model Notification {
   @@map("notifications")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
 
-enum Theme {
-  LIGHT
-  DARK
-}
-
-enum Privacy {
-  PUBLIC
-  PRIVATE
-}
 
 enum Language {
   PYTHON

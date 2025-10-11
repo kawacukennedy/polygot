@@ -1,6 +1,6 @@
 import React from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -19,8 +19,8 @@ const getVariantClasses = (variant: ButtonVariant) => {
       return 'bg-primary hover:bg-primary_600 text-white';
     case 'secondary':
       return 'bg-gray-200 hover:bg-gray-300 text-gray-800';
-    case 'ghost':
-      return 'bg-transparent hover:bg-gray-100 text-gray-800';
+    case 'outline':
+      return 'border border-primary text-primary hover:bg-primary hover:text-white';
     case 'danger':
       return 'bg-danger hover:bg-red-600 text-white';
     default:
@@ -50,7 +50,7 @@ const Button: React.FC<ButtonProps> = ({
   aria_label,
   onClick,
 }) => {
-  const baseClasses = 'font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary';
+  const baseClasses = 'font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-transform duration-120 hover:scale-103 active:scale-98 active:duration-90';
   const variantClasses = getVariantClasses(variant);
   const sizeClasses = getSizeClasses(size);
   const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';

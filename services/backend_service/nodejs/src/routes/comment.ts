@@ -208,7 +208,7 @@ router.patch('/:id/moderate', authenticate, async (req, res) => {
       return res.status(404).json({ message: 'Comment not found' });
     }
 
-    let updateData: any = { moderated: true, moderatorId };
+    let updateData: Record<string, any> = { moderated: true, moderatorId };
 
     if (action === 'delete') {
       updateData.isDeleted = true;

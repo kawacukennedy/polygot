@@ -28,7 +28,7 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose(id);
-    }, 5000); // Auto-close after 5 seconds
+    }, 4000); // Auto-close after 4 seconds
 
     return () => {
       clearTimeout(timer);

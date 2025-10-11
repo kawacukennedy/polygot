@@ -1,24 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
 import { apiCall } from '../services/apiClient';
-import Modal from '../components/Modal';
 
 const SignUpPage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState(localStorage.getItem('unsaved_signup') ? JSON.parse(localStorage.getItem('unsaved_signup')!).username : '');
+  const [email, setEmail] = useState(localStorage.getItem('unsaved_signup') ? JSON.parse(localStorage.getItem('unsaved_signup')!).email : '');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({
     username: '',
     email: '',
     password: '',
-    confirmPassword: '',
     form: '',
   });
   const [isFormValid, setIsFormValid] = useState(false);
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [networkError, setNetworkError] = useState('');
   const navigate = useNavigate();
   const { signup } = useAuth();
   const { addToast } = useToast();
@@ -34,8 +30,8 @@ const SignUpPage: React.FC = () => {
 
       // Username validation
       if (username.length > 0) {
-        if (username.length < 3 || username.length > 30) {
-          newErrors.username = 'Username must be between 3 and 30 characters.';
+        if (username.length < 3 || username.length > 20) {
+          newErrors.username = 'Username must be between 3 and 20 characters.';
         } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
           newErrors.username = 'Only letters, numbers and underscores allowed.';
         } else {
@@ -85,18 +81,12 @@ const SignUpPage: React.FC = () => {
         }
       }
 
-      // Confirm password validation
-      if (confirmPassword.length > 0 && password !== confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match.';
-      }
-
       setErrors(newErrors);
       setIsFormValid(
         Object.values(newErrors).every((error) => error === '') &&
         username.length > 0 &&
         email.length > 0 &&
-        password.length > 0 &&
-        confirmPassword.length > 0
+        password.length > 0
       );
     };
 
@@ -105,7 +95,16 @@ const SignUpPage: React.FC = () => {
     }, 300); // Debounce validation
 
     return () => clearTimeout(debounce);
-  }, [username, email, password, confirmPassword]);
+  }, [username, email, password]);
+
+  // Autosave
+  useEffect(() => {
+    const autosave = setInterval(() => {
+      localStorage.setItem('unsaved_signup', JSON.stringify({ username, email }));
+    }, 3000);
+
+    return () => clearInterval(autosave);
+  }, [username, email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,18 +113,18 @@ const SignUpPage: React.FC = () => {
         await signup(username, email, password);
         // Analytics event
         console.log('signup_success', { user_id: 'mock', timestamp: new Date() });
-        addToast('Account created! Check your email to verify your account.', 'success');
-        setShowVerificationModal(true);
+        localStorage.removeItem('unsaved_signup');
+        navigate('/check-email');
       } catch (error: any) {
         if (error.status === 400) {
-          // Validation error - show inline
-          setErrors({ ...errors, form: 'Validation error - check fields' });
+          // Validation error - show inline on password
+          setErrors({ ...errors, password: 'Weak password' });
         } else if (error.status === 409) {
-          // Duplicate
-          setErrors({ ...errors, form: 'Username or email already exists' });
+          // Duplicate - assume email, show inline
+          setErrors({ ...errors, email: 'Email is already registered' });
         } else {
           // Network or other
-          addToast('Network error - please try again', 'error');
+          setNetworkError('Network error - please try again');
         }
       }
     }
@@ -148,7 +147,7 @@ const SignUpPage: React.FC = () => {
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="choose-a-username"
+            placeholder="letters, numbers, underscore"
             aria-label="username"
             tabIndex={1}
             className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.username ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
@@ -176,7 +175,7 @@ const SignUpPage: React.FC = () => {
           />
           {errors.email && <p className="text-danger text-xs mt-1">{errors.email}</p>}
         </div>
-        <div className="mb-3">
+        <div className="mb-4">
           <label
             htmlFor="password"
             className="block text-sm font-medium text-muted mb-1"
@@ -188,33 +187,13 @@ const SignUpPage: React.FC = () => {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••••••"
+            placeholder="at least 12 chars"
             aria-label="password"
             tabIndex={3}
             className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.password ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
             style={{ height: '44px' }}
           />
           {errors.password && <p className="text-danger text-xs mt-1">{errors.password}</p>}
-        </div>
-        <div className="mb-4">
-          <label
-            htmlFor="confirmPassword"
-            className="block text-sm font-medium text-muted mb-1"
-          >
-            Confirm Password
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="••••••••••••"
-            aria-label="confirm password"
-          tabIndex={5}
-            className={`w-full px-3 bg-surface border rounded-md focus:outline-none focus:ring-2 ${errors.confirmPassword ? 'border-danger' : 'border-gray-300'} focus:ring-focus-ring`}
-            style={{ height: '44px' }}
-          />
-          {errors.confirmPassword && <p className="text-danger text-xs mt-1">{errors.confirmPassword}</p>}
         </div>
         <button
           type="submit"
@@ -226,40 +205,20 @@ const SignUpPage: React.FC = () => {
           Create account
         </button>
       </form>
+      {networkError && (
+        <div className="mb-4 p-3 bg-danger-light border border-danger rounded-md">
+          <p className="text-danger">{networkError}</p>
+          <button
+            onClick={() => setNetworkError('')}
+            className="mt-2 px-3 py-1 bg-primary text-white rounded hover:bg-primary-hover"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       <p className="text-xs text-muted mt-3" style={{ fontSize: '13px' }}>
         By creating an account you agree to our Terms and Privacy Policy
       </p>
-
-      <Modal isOpen={showVerificationModal} onClose={() => { setShowVerificationModal(false); navigate('/login'); }}>
-        <h2 id="verify_headline">Verify your email</h2>
-        <p>We sent a verification link to <strong>{email}</strong>. Please check your email and click the link to activate your account. The link will expire in 15 minutes.</p>
-        <div className="flex justify-end mt-4 space-x-2">
-          <button
-            onClick={async () => {
-              try {
-                await apiCall('/auth/resend-verification', {
-                  method: 'POST',
-                  body: JSON.stringify({ email })
-                });
-                addToast('Verification email resent!', 'success');
-              } catch (error: any) {
-                addToast('Failed to resend email', 'error');
-              }
-            }}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-            tabIndex={1}
-          >
-            Resend Email
-          </button>
-          <button
-            onClick={() => { setShowVerificationModal(false); navigate('/login'); }}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-            tabIndex={2}
-          >
-            Go to Login
-          </button>
-        </div>
-      </Modal>
     </div>
   );
 };

@@ -50,7 +50,17 @@ const io = new Server(server, {
   }
 });
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", "https://api.supabase.co", "wss:"],
+    },
+  },
+}));
 app.use(cors());
 app.use(express.json());
 

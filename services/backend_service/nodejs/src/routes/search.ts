@@ -26,7 +26,7 @@ router.get('/snippets', async (req, res) => {
     const take = Number(limit);
 
     // Build where clause
-    const where: any = {
+    const where: Record<string, any> = {
       visibility: visibility === 'public' ? 'PUBLIC' : undefined,
       isDeleted: false // Assuming we'll add this field for soft deletes
     };
@@ -67,8 +67,8 @@ router.get('/snippets', async (req, res) => {
     }
 
     // Build order by
-    const orderBy: any = {};
-    orderBy[sortBy as string] = sortOrder;
+    const orderBy: Record<string, string> = {};
+    orderBy[sortBy as string] = sortOrder as string;
 
     // Execute search
     const [snippets, total] = await Promise.all([
@@ -162,7 +162,7 @@ router.get('/users', async (req, res) => {
 
     const skip = (Number(page) - 1) * Number(limit);
 
-    const where: any = {};
+    const where: Record<string, any> = {};
     if (q) {
       where.OR = [
         { username: { contains: q as string, mode: 'insensitive' } },

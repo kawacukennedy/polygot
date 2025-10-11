@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client';
 import { authenticate } from '../middleware/auth';
 import { executeCode } from '../services/execution';
 import { awardPoints } from '../services/gamification';
-import { trackSnippetRun } from '../services/analytics';
 import { validateSnippet, sanitizeInput } from '../middleware/security';
 import logger from '../utils/logger';
 
@@ -22,12 +21,12 @@ router.post('/', authenticate, sanitizeInput, validateSnippet, async (req, res) 
         language,
         visibility,
         tags,
-        ownerId: req.user!.userId
+        ownerId: (req as any).user.userId
       }
     });
 
     // Award points for sharing snippet
-    await awardPoints(req.user!.userId, 'snippet_shared');
+    await awardPoints((req as any).user.userId, 'snippet_shared');
 
     res.status(201).json(snippet);
   } catch (error) {
@@ -48,24 +47,20 @@ router.get('/:id', async (req, res) => {
         },
         comments: {
           where: { isDeleted: false },
+
           include: {
-            author: { select: { id: true, username: true, avatarUrl: true } },
+            author: {
+              select: { username: true }
+            },
             replies: {
               where: { isDeleted: false },
               include: {
-                author: { select: { id: true, username: true, avatarUrl: true } },
-                replies: {
-                  where: { isDeleted: false },
-                  include: {
-                    author: { select: { id: true, username: true, avatarUrl: true } }
-                  },
-                  orderBy: { createdAt: 'asc' }
+                author: {
+                  select: { username: true }
                 }
-              },
-              orderBy: { createdAt: 'asc' }
+              }
             }
-          },
-          orderBy: { createdAt: 'desc' }
+          }
         }
       }
     });
@@ -74,10 +69,12 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Snippet not found' });
     }
 
-    if (snippet.visibility === 'PRIVATE' && req.user?.userId !== snippet.ownerId) {
-      return res.status(403).json({ message: 'Private snippet' });
+    const etag = `"${snippet.updatedAt.getTime()}"`;
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
     }
 
+    res.set('ETag', etag);
     res.json(snippet);
   } catch (error) {
     logger.error({ error, snippetId: id }, 'Get snippet error');
@@ -85,8 +82,68 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Update snippet
+router.put('/:id', authenticate, sanitizeInput, validateSnippet, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, code, language, visibility, tags } = req.body;
+
+    const snippet = await prisma.snippet.findUnique({ where: { id } });
+    if (!snippet) {
+      return res.status(404).json({ message: 'Snippet not found' });
+    }
+
+    if ((req as any).user.userId !== snippet.ownerId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const updatedSnippet = await prisma.snippet.update({
+      where: { id },
+      data: {
+        title,
+        code,
+        language,
+        visibility,
+        tags
+      }
+    });
+
+    res.json(updatedSnippet);
+  } catch (error) {
+    logger.error({ error, snippetId: id, userId: req.user!.userId }, 'Update snippet error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Partial update snippet
+router.patch('/:id', authenticate, sanitizeInput, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const snippet = await prisma.snippet.findUnique({ where: { id } });
+    if (!snippet) {
+      return res.status(404).json({ message: 'Snippet not found' });
+    }
+
+    if (req.user!.userId !== snippet.ownerId) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const updatedSnippet = await prisma.snippet.update({
+      where: { id },
+      data: updates
+    });
+
+    res.json(updatedSnippet);
+  } catch (error) {
+    logger.error({ error, snippetId: id, userId: req.user!.userId }, 'Patch snippet error');
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // Run snippet
-router.post('/:id/run', authenticate, async (req, res) => {
+router.post('/:id/run', authenticate, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const snippet = await prisma.snippet.findUnique({ where: { id } });
@@ -104,51 +161,8 @@ router.post('/:id/run', authenticate, async (req, res) => {
       }
     });
 
-    // Execute code asynchronously
-    executeCode(snippet.code, snippet.language)
-      .then(async (result) => {
-        await prisma.execution.update({
-          where: { id: execution.id },
-          data: {
-            status: result.success ? 'SUCCESS' : 'ERROR',
-            stdout: result.stdout,
-            stderr: result.stderr,
-            executionTimeMs: result.executionTime,
-            finishedAt: new Date()
-          }
-        });
-
-        // Track analytics event
-        trackSnippetRun(
-          req.user!.userId,
-          snippet.id,
-          result.executionTime,
-          result.success ? 'success' : 'error',
-          req.ip
-        );
-
-        // Award points for running snippet
-        await awardPoints(req.user!.userId, 'snippet_run');
-      })
-      .catch(async (error) => {
-        await prisma.execution.update({
-          where: { id: execution.id },
-          data: {
-            status: 'ERROR',
-            stderr: error.message,
-            finishedAt: new Date()
-          }
-        });
-
-        // Track failed execution
-        trackSnippetRun(
-          req.user!.userId,
-          snippet.id,
-          0,
-          'error',
-          req.ip
-        );
-      });
+    // Queue execution
+    await executeCode(snippet.code, snippet.language, execution.id, req.user!.userId, id);
 
     res.status(202).json({ executionId: execution.id });
   } catch (error) {

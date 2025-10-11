@@ -5,11 +5,13 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
+import { apiCall } from '../services/apiClient';
 import Modal from '../components/Modal';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({
     email: '',
     password: '',
@@ -18,6 +20,7 @@ const LoginPage: React.FC = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const [show2FAModal, setShow2FAModal] = useState(false);
   const [otp, setOtp] = useState('');
+  const [tempToken, setTempToken] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -56,6 +59,7 @@ const LoginPage: React.FC = () => {
       try {
         const result = await login(email, password);
         if (result.twoFactorRequired) {
+          setTempToken(result.tempToken);
           setShow2FAModal(true);
         } else {
           navigate('/dashboard');
@@ -118,7 +122,16 @@ const LoginPage: React.FC = () => {
               )}
             </div>
             <div className="flex items-center justify-between">
-              <Link to="/forgot-password" className="text-sm underline">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <Label htmlFor="rememberMe" className="text-sm">Remember me</Label>
+              </div>
+              <Link to="/auth/forgot" className="text-sm underline">
                 Forgot password?
               </Link>
             </div>
@@ -151,9 +164,16 @@ const LoginPage: React.FC = () => {
               Resend
             </Button>
             <Button onClick={async () => {
-              // TODO: Call 2FA verify API
-              setShow2FAModal(false);
-              navigate('/dashboard');
+              try {
+                await apiCall('/auth/2fa/verify', {
+                  method: 'POST',
+                  body: JSON.stringify({ otp, tempToken })
+                });
+                setShow2FAModal(false);
+                navigate('/dashboard');
+              } catch (error) {
+                // handle error
+              }
             }}>
               Verify
             </Button>
